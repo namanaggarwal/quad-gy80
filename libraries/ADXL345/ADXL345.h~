@@ -15,6 +15,8 @@
 #define ADXL345_OFFY 0x1F  // address for y offset
 #define ADXL345_OFFZ 0x20  // address for z offset
 
+#define ALPHA 0.5
+
 struct AccelRaw  //create 'vector' for raw data
 {
   int x;
@@ -44,14 +46,14 @@ class ADXL345
   AccelRaw readAccel();
   AccelG readAccelG();
   void printAllRegister();
-  void print_byte(byte_val);
+  void print_byte(byte val);
   void printCalibrationValues(int samples);
-  void readFrom(byte address, byte val);
+  void readFrom(byte address, int num, byte _buff[]);
   AccelRotation readPitchRoll();
   void softoff(double x, double y, double z);
 
  private:
-  byte_buff[6];
+  byte _buff[6];
 
   double xg, yg, zg;
   double _xoffset, _yoffset, _zoffset;
