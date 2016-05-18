@@ -1,4 +1,3 @@
-
 #include "ADXL345.h"
 #include "L3G4200D.h"
 #include <Wire.h>
@@ -28,7 +27,7 @@ inline void arm() {
   d.write(ESC_MIN);
 
   delay(1000);
-   
+
 
 }
 
@@ -56,14 +55,14 @@ inline void initADXL() {
 
 inline void initL3G() {
   Serial.println("Gyro Ready.");
-  //  gyro.init()
-  gyro.printCalibrationValues(40); // X: -30.34639 Y: 4.40818 Z: 8.29726
-  
-  
+   //  gyro.init()
+   gyro.printCalibrationValues(40); // X: -30.34639 Y: 4.40818 Z: 8.29726
+
+
 
 }
-  
-  
+
+
 
 void setup(){
 
@@ -72,12 +71,10 @@ void setup(){
   Serial.print("\nReady");
   Wire.begin();
   initADXL();
-  initL3G();  
-<<<<<<< HEAD
-  //initESCs();
-=======
+  initL3G();
   initESCs();
->>>>>>> ba866d8c8bc6f26046e1d2c55ed141b5ab2a0614
+  initESCs();
+
 
 
 }
@@ -90,4 +87,3 @@ void loop(){
 
 
 }
-
