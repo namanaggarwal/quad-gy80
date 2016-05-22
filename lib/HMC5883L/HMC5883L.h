@@ -2,7 +2,7 @@
 #define HMC5883L_h
 #include <Wire.h>
 #include "Arduino.h"
-
+// this is a change
 #define HMC5883L_DEVICE 0x1E      //device address
 
 #define HMC5883L_CONF_REG_A 0x00
