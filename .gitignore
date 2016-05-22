@@ -1,2 +1,7 @@
 #silly emacs backups
 *"."*"~"
+
+#platformio files
+.travis.yml
+.pioenvs
+.build_ano
