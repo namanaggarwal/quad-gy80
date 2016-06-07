@@ -27,7 +27,7 @@ bool readGyro;
 double angleF_roll;
 double angleF_pitch;
 double angleF_yaw;
-float headingDegrees;
+float heading;
 unsigned long pT;
 inline void arm() {
   a.write(ESC_MIN);
@@ -68,20 +68,11 @@ inline void initL3G() {
 
 inline void initHMC() {
   Serial.println("Compass Ready.");
-
+  if(!compass.init()) {
+    return false;
+  }
 }
 
-
-//void DEBUG() {
-//  Serial.print("Filtered Roll: ");
-//  Serial.println(angleF_roll);
-
-//  Serial.print("Filtered Pitch: ");
-//  Serial.print(angleF_pitch);
-
-//  Serial.print("Filtered Yaw: ");
-//  Serial.print(angleF_yaw);
-//}
 
 
 void setup(){
@@ -112,6 +103,32 @@ void timerIsr()
   readGyro = true;
 }
 
+//Tilt Compensation
+float tiltCompensation(MagnetoG mag, float roll, float pitch) {
+  if(roll > .78 || roll < -.78 || pitch > .78 || pitch < -.78) {
+    return -1000;
+  }
+
+  float cosRoll = cos(roll);
+  float sinRoll = sin(roll);
+  float cosPitch = cos(pitch);
+  float sinPitch = sin(pitch);
+
+  //compensation!
+  float Xh = mag.x * cosPitch + mag.z * sinPitch;
+  float Yh = mag.y * sinRoll * sinPitch + mag.y * cosRoll - mag.z * sinRoll * cosPitch;
+  float heading = atan2(Yh, Xh);
+  return heading;
+}
+
+float correctAngle(float heading)
+{
+  if (heading < 0) { heading += 2 * PI; }
+  if (heading > 2 * PI) { heading -= 2 * PI; }
+
+  return heading;
+}
+
 
 void loop(){
   //Accel
@@ -133,7 +150,7 @@ void loop(){
       // Filtered pitch and roll from accel and gyro
       angleF_roll = 0.95*(angleF_roll + gDPS.x*(dT/1000000.0)) +0.05*accelRot.roll;
       angleF_pitch = 0.95*(angleF_pitch - gDPS.y*(dT/1000000.0)) +0.05*accelRot.pitch;
-      angleF_yaw = 0.95*(angleF_yaw - gDPS.y*(dT/1000000.0)) +0.05*headingDegrees;
+      angleF_yaw = 0.95*(angleF_yaw - gDPS.y*(dT/1000000.0)) +0.05*heading2;
 
       Serial.print("Roll: ");
       Serial.print(angleF_roll);
@@ -142,35 +159,35 @@ void loop(){
       Serial.print("\tYaw: ");
       Serial.print(angleF_yaw);
       Serial.print("\tHeading: ");
-      Serial.println(headingDegrees);
+      Serial.print(heading2);
     }
 
   //Compass
   MagnetoG cDPS;
-  cDPS = compass.readCompassG();
 
-  float heading = atan2(cDPS.y, cDPS.x);
+  heading = tiltCompensate(cDPS, angleF_roll, angleF_pitch);
+  
+  float declinationAngle = (-5.0 + (36.0/60.0)) / (180 / M_PI );
+  if(heading == -1000) {
+    heading2 = heading1
+      }
   // You can find your declination on: http://magnetic-declination.com/
   // (+) Positive or (-) for negative
   // For Bytom / Poland declination angle is 4'26E (positive)
   // Formula: (deg + (min / 60.0)) / (180 / M_PI);
   //Lexington, KY -South
 
-  float declinationAngle = (-5.0  + (36.0 / 60.0)) / (180 / M_PI);
-  heading += declinationAngle;
 
-  if (heading < 0)
-    {
-      heading += 2 * PI;
-    }
+  heading1 += declinationAngle;
+  heading2 += declinationAngle;
 
-  if (heading > 2 * PI)
-    {
-      heading -= 2 * PI;
-    }
+  heading1 = correctAngle(heading1);
+  heading2 = correctAngle(heading2);
 
-  // Convert to doegrees
-  headingDegrees = heading * 180/M_PI;
+  heading1 = heading1 * 180/M_PI;
+  heading2 = heading2 * 180/M_PI;
+  
+
 }
   
 

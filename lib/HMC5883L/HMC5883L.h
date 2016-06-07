@@ -28,16 +28,15 @@
 
 
 
-
 typedef enum
   {
     HMC5883L_IDLE          = 0b10,
     HMC5883L_SINGLE        = 0b01,
-    HMC5883L_CONTINOUS     = 0b00
+    HMC5883L_CONTINUOUS     = 0b00
   } hmc5883l_mode_t;
 
 typedef enum
-{
+  {
    HMC5883L_SAMPLES_8     = 0b11,
    HMC5883L_SAMPLES_4     = 0b10,
    HMC5883L_SAMPLES_2     = 0b01,
@@ -86,22 +85,43 @@ class HMC5883L
 {
  public:
   HMC5883L();
-  void init(char xoffset=0, char yoffset=0, char zoffset=0);
-  void writeTo(byte address, byte val);
+  bool init();
+
   void calibrate();
+  
+
+  void setRange(hmc5883l_range_t range);
+  void setMeasurementMode(hmc5883l_mode_t mode);
+  void setDataRate(hmc5883l_dataRate_t dataRate);
+  void setSamples(hmc5883l_samples_t samples);
+
+  hmc5883l_range_t getRange();
+  hmc5883l_mode_t getMeasurementMode();
+  hmc5883l_dataRate_t getDataRate();
+  hmc5883l_samples_t getSamples();
+
+
+
   void setOffset(int xoffset, int yoffset);
+  
   MagnetoRaw readCompass();
   MagnetoG readCompassG();
+  
   void printAllRegister();
   void print_byte(byte val);
   void printCalibrationValues(int samples);
+  void writeTo(byte address, byte val);
   void readFrom(byte address, int num, byte _buff[]);
-
  private:
+  // this is an array with 6 bytes (3 ints!!)
+  // this allows us to store the information from compass readings
+  // since each reading comes in as 2 bytes
   byte _buff[6];
   float mgPerDigit;
   double xg, yg, zg;
   double x_offset, y_offset;
+
+  
 };
 
 #endif
