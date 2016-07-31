@@ -27,50 +27,54 @@ bool readGyro;
 double angleF_roll;
 double angleF_pitch;
 double angleF_yaw;
-float heading;
 unsigned long pT;
+
+/*
 inline void arm() {
   a.write(ESC_MIN);
   b.write(ESC_MIN);
   c.write(ESC_MIN);
   d.write(ESC_MIN);
 
-  delay(1000);
 }
 
-inline void initESCs() {
+void initESCs() {
 
   a.attach(ESC_A);
   b.attach(ESC_B);
   c.attach(ESC_C);
   d.attach(ESC_D);
-
   delay(1000);
 
-  arm();
-
 }
-
+*/
 inline void initADXL() {
 
   Serial.println("Accelerometer Ready.");
   accel.init(0,0,0);
-  accel.setSoftwareOffset(0,0,0);
+  //accel.setSoftwareOffset(0,0,0);
   accel.printCalibrationValues(40);
 }
 
 
 inline void initL3G() {
   Serial.println("Gyro Ready.");
-   //  gyro.init()
-   gyro.printCalibrationValues(40); // X: -30.34639 Y: 4.40818 Z: 8.29726
+  gyro.init();
+   //gyro.printCalibrationValues(40); // X: -30.34639 Y: 4.40818 Z: 8.29726
 }
 
 inline void initHMC() {
   Serial.println("Compass Ready.");
   if(!compass.init()) {
-    return false;
+    Serial.println("Compass not ready!");
+    while(1);
   }
+  //compass.calibrate();
+  compass.setOffset(20, -6);
+  compass.setRange(HMC5883L_RANGE_1_3GA);
+  compass.setMeasurementMode(HMC5883L_CONTINUOUS);
+  compass.setDataRate(HMC5883L_DATARATE_30HZ);
+  compass.setSamples(HMC5883L_SAMPLES_8);
 }
 
 
@@ -83,7 +87,8 @@ void setup(){
 
   pT = 0;
   readGyro = false;
-  angleF_roll = angleF_pitch = angleF_yaw = headingDegrees = 0;
+  angleF_roll = angleF_pitch = angleF_yaw = 0;//headingDegrees = 0;
+
   
   Wire.begin();
   initADXL();
@@ -103,6 +108,7 @@ void timerIsr()
   readGyro = true;
 }
 
+/*
 //Tilt Compensation
 float tiltCompensation(MagnetoG mag, float roll, float pitch) {
   if(roll > .78 || roll < -.78 || pitch > .78 || pitch < -.78) {
@@ -128,7 +134,7 @@ float correctAngle(float heading)
 
   return heading;
 }
-
+*/
 
 void loop(){
   //Accel
@@ -150,8 +156,8 @@ void loop(){
       // Filtered pitch and roll from accel and gyro
       angleF_roll = 0.95*(angleF_roll + gDPS.x*(dT/1000000.0)) +0.05*accelRot.roll;
       angleF_pitch = 0.95*(angleF_pitch - gDPS.y*(dT/1000000.0)) +0.05*accelRot.pitch;
-      angleF_yaw = 0.95*(angleF_yaw - gDPS.y*(dT/1000000.0)) +0.05*heading2;
-
+      //angleF_yaw = 0.95*(angleF_yaw - gDPS.y*(dT/1000000.0)) +0.05*heading2;
+      /*
       Serial.print("Roll: ");
       Serial.print(angleF_roll);
       Serial.print("\tPitch: ");
@@ -160,13 +166,27 @@ void loop(){
       Serial.print(angleF_yaw);
       Serial.print("\tHeading: ");
       Serial.print(heading2);
+      */
     }
 
   //Compass
-  MagnetoG cDPS;
+  /*
+  Vector cDPS;
 
-  heading = tiltCompensate(cDPS, angleF_roll, angleF_pitch);
+  //heading = tiltCompensate(cDPS, angleF_roll, angleF_pitch);
+  cDPS = compass.readNormalize();
+  float heading = atan2(cDPS.y, cDPS.x);
+  //convert to degrees
+  float deg = (heading *  180)/M_PI;
+  float declinationAngle = (-5.0 + (37.0/60.0));
+  deg += declinationAngle;
+  if(deg < 0) {
+    deg += 360;
+  }
   
+  Serial.println(deg);
+  */
+  /*
   float declinationAngle = (-5.0 + (36.0/60.0)) / (180 / M_PI );
   if(heading == -1000) {
     heading2 = heading1
@@ -186,7 +206,7 @@ void loop(){
 
   heading1 = heading1 * 180/M_PI;
   heading2 = heading2 * 180/M_PI;
-  
+  */
 
 }
   
