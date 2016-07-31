@@ -67,14 +67,7 @@ typedef enum
   } hmc5883l_range_t;
 
 
-struct MagnetoRaw
-{
-  int x;
-  int y;
-  int z;
-};
-
-struct MagnetoG
+struct Vector
 {
   double x;
   double y;
@@ -85,8 +78,8 @@ class HMC5883L
 {
  public:
   HMC5883L();
-  bool init();
 
+  bool init();
   void calibrate();
   
 
@@ -104,8 +97,8 @@ class HMC5883L
 
   void setOffset(int xoffset, int yoffset);
   
-  MagnetoRaw readCompass();
-  MagnetoG readCompassG();
+  Vector readCompass();
+  Vector readNormalize();
   
   void printAllRegister();
   void print_byte(byte val);
@@ -115,7 +108,8 @@ class HMC5883L
  private:
   // this is an array with 6 bytes (3 ints!!)
   // this allows us to store the information from compass readings
-  // since each reading comes in as 2 bytes
+  // since each reading comes in as 2 bytes,
+  // but we can always store less than that!
   byte _buff[6];
   float mgPerDigit;
   double xg, yg, zg;

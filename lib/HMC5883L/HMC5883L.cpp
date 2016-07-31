@@ -7,9 +7,6 @@ HMC5883L::HMC5883L()
 }
 
 bool HMC5883L::init() {
-  //writeTo(HMC5884L_MODE, 0) this is the default value anyway
-  //HMC has no offset as far as I can tell
-   //this may just be an empty function
   byte val;
   readFrom(HMC5883L_ID_REG_A,1,&val);
   //  byte val;
@@ -49,7 +46,7 @@ void HMC5883L::calibrate() {
   offX = offY = 0;
   for(int i = 0; i < 1000; i++) // take 1000 samples
     {
-      MagnetoRaw raw = readCompass();
+      Vector raw = readCompass();
 
       if (raw.x < minX) minX = raw.x;
       if (raw.y < minY) minY = raw.y;
@@ -195,16 +192,16 @@ void HMC5883L::writeTo(byte address, byte val) {
   Wire.endTransmission();
 }
 
-MagnetoRaw HMC5883L::readCompass() {
+Vector HMC5883L::readCompass() {
   //read compass data from hmc5883l
   // Serial.println("Reading...");
   readFrom(HMC5883L_OUT_X_MSB, HMC5883L_TO_READ, _buff);
   
-  MagnetoRaw raw;
+  Vector raw;
   raw.x = ((((int)_buff[0]) << 8) | _buff[1]) - x_offset;
   raw.y = ((((int)_buff[4]) << 8) | _buff[5]) - y_offset;
   raw.z = (((int)_buff[2]) << 8) | _buff[3];
-
+  
   // Serial.print("Read: ");
   // Serial.print(raw.x);
   // Serial.print("\t");
@@ -225,9 +222,7 @@ void HMC5883L::readFrom(byte address, int num, byte _buff[]) {
   //we can get the data from sequential registers if we request more bytes
   //than 1
   Wire.requestFrom(HMC5883L_DEVICE, num); //request num bytes from registers
-
   int i = 0;
-
   //this makes it simple to read all 3 registers and to get all
   //6 bytes of data from the device
   //use num = 6 when reading positional data, num = 1 when reading
@@ -238,23 +233,20 @@ void HMC5883L::readFrom(byte address, int num, byte _buff[]) {
       i++;
     }
 
-  Wire.endTransmission(); //end the transmission
+  Wire.endTransmission(); //end the
+
 }
 
-  
+Vector HMC5883L::readNormalize() {
 
-MagnetoG HMC5883L::readCompassG() {
-  MagnetoRaw raw;
+
+  Vector raw;
+  Vector norm;
   raw = readCompass();
-
-  MagnetoG res;
-
-
-  res.x = (raw.x) * mgPerDigit;
-  res.y = (raw.y) * mgPerDigit;
-  res.z = raw.z * mgPerDigit;
-  //mg per digit = .9.92f
-  return res;
   
-  
+  norm.x = (raw.x - x_offset) * mgPerDigit;
+  norm.y = (raw.y - y_offset) * mgPerDigit;
+  norm.z = (raw.z) * mgPerDigit;
+
+  return norm;
 }
