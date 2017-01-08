@@ -3,38 +3,33 @@
 
 HMC5883L::HMC5883L()
 {
-  xg = yg = zg = 0;
+  Serial.print("Starting HMC");
 }
 
 bool HMC5883L::init() {
+  //writeTo(HMC5884L_MODE, 0) this is the default value anyway
+  //HMC has no offset as far as I can tell
+   //this may just be an empty function
+
+  Wire.begin();
+  
   byte val;
-  readFrom(HMC5883L_ID_REG_A,1,&val);
+  readFrom(HMC5883L_ID_REG_A,3, _buff);
   //  byte val;
-  //  val = _buff[1]
-  if(val != 0x48) {
-    Serial.print(val);
+  
+  if(_buff[0] != 0x48 ||
+     _buff[1] != 0x34 ||
+     _buff[2] != 0x33) {
     return false;
   }
   
-  readFrom(HMC5883L_ID_REG_B,1, &val);
-  val = _buff[1];
-  if(val != 0x00) {
-    Serial.print(val);
-    return false;
-  }
-
-  readFrom(HMC5883L_ID_REG_C, 1, &val);
-  val = _buff[1];
-  if(val != 0x00) {
-    Serial.print(val);
-    return false;
-  }
-
   
   setRange(HMC5883L_RANGE_1_3GA);
   setMeasurementMode(HMC5883L_CONTINUOUS);
   setDataRate(HMC5883L_DATARATE_15HZ);
   setSamples(HMC5883L_SAMPLES_1);
+
+  mgPerDigit = 0.92f;
   
   return true;
 }
@@ -46,7 +41,7 @@ void HMC5883L::calibrate() {
   offX = offY = 0;
   for(int i = 0; i < 1000; i++) // take 1000 samples
     {
-      Vector raw = readCompass();
+      MagnetoRaw raw = readCompass();
 
       if (raw.x < minX) minX = raw.x;
       if (raw.y < minY) minY = raw.y;
@@ -192,16 +187,16 @@ void HMC5883L::writeTo(byte address, byte val) {
   Wire.endTransmission();
 }
 
-Vector HMC5883L::readCompass() {
+MagnetoRaw HMC5883L::readCompass() {
   //read compass data from hmc5883l
   // Serial.println("Reading...");
   readFrom(HMC5883L_OUT_X_MSB, HMC5883L_TO_READ, _buff);
   
-  Vector raw;
+  MagnetoRaw raw;
   raw.x = ((((int)_buff[0]) << 8) | _buff[1]) - x_offset;
   raw.y = ((((int)_buff[4]) << 8) | _buff[5]) - y_offset;
   raw.z = (((int)_buff[2]) << 8) | _buff[3];
-  
+
   // Serial.print("Read: ");
   // Serial.print(raw.x);
   // Serial.print("\t");
@@ -216,13 +211,16 @@ void HMC5883L::readFrom(byte address, int num, byte _buff[]) {
   Wire.beginTransmission(HMC5883L_DEVICE); // start transmission to device
   Wire.write(address); // send address we want to read from
   Wire.endTransmission();
+  Serial.print("attempting read");
 
   Wire.beginTransmission(HMC5883L_DEVICE); // start second transmission
 
   //we can get the data from sequential registers if we request more bytes
   //than 1
   Wire.requestFrom(HMC5883L_DEVICE, num); //request num bytes from registers
+
   int i = 0;
+
   //this makes it simple to read all 3 registers and to get all
   //6 bytes of data from the device
   //use num = 6 when reading positional data, num = 1 when reading
@@ -231,22 +229,26 @@ void HMC5883L::readFrom(byte address, int num, byte _buff[]) {
     {
       _buff[i] = Wire.read();
       i++;
+      
     }
-
-  Wire.endTransmission(); //end the
-
+  
+  Wire.endTransmission(); //end the transmission
 }
 
-Vector HMC5883L::readNormalize() {
-
-
-  Vector raw;
-  Vector norm;
-  raw = readCompass();
   
-  norm.x = (raw.x - x_offset) * mgPerDigit;
-  norm.y = (raw.y - y_offset) * mgPerDigit;
-  norm.z = (raw.z) * mgPerDigit;
 
-  return norm;
+MagnetoG HMC5883L::readCompassG() {
+  MagnetoRaw raw;
+  raw = readCompass();
+
+  MagnetoG res;
+
+
+  res.x = (raw.x) * mgPerDigit;
+  res.y = (raw.y) * mgPerDigit;
+  res.z = raw.z * mgPerDigit;
+  //mg per digit = .9.92f
+  return res;
+  
+  
 }
