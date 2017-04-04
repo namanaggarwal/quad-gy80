@@ -2,7 +2,8 @@
 #define HMC5883L_h
 #include <Wire.h>
 #include "Arduino.h"
-// this is a change
+#include "Vector.h"
+
 #define HMC5883L_DEVICE 0x1E      //device address
 
 #define HMC5883L_CONF_REG_A 0x00
@@ -67,20 +68,6 @@ typedef enum
   } hmc5883l_range_t;
 
 
-struct MagnetoRaw
-{
-  int x;
-  int y;
-  int z;
-};
-
-struct MagnetoG
-{
-  double x;
-  double y;
-  double z;
-};
-
 class HMC5883L
 {
  public:
@@ -100,12 +87,10 @@ class HMC5883L
   hmc5883l_dataRate_t getDataRate();
   hmc5883l_samples_t getSamples();
 
-
-
   void setOffset(int xoffset, int yoffset);
   
-  MagnetoRaw readCompass();
-  MagnetoG readCompassG();
+  Vector readCompass();
+  Vector readRaw();
   
   void printAllRegister();
   void print_byte(byte val);

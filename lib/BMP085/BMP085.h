@@ -45,9 +45,8 @@ class BMP085 {
 
  private:
   int32_t computeB5(int32_t UT);
-  byte readRegister8(byte addr);
-  uint16_t readRegister16(byte addr);
-  void writeRegister8(byte data, byte addr);
+  int16_t readRegister16(byte address);
+  void writeRegister(byte data, byte address);
 
   uint8_t oversample;
 

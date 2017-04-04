@@ -28,23 +28,9 @@ void ADXL345::setSoftwareOffset(double x, double y, double z)
   _zoffset = z;
 }
 
-AccelRotation ADXL345::readPitchRoll()
-{
-  AccelG accel;
-  accel = readAccelG();
-
-  AccelRotation rot;
-
-  rot.pitch = (atan2(accel.x,sqrt(accel.y*accel.y+accel.z*accel.z)) * 180.0) / PI;
-  rot.roll = (atan2(accel.y,(sqrt(accel.x*accel.x+accel.z*accel.z))) * 180.0) / PI;
-
-  return rot;
-}
-
-
 void ADXL345::printCalibrationValues(int samples)
 {
-  double x,y,z;
+  //double x,y,z;
   double xt,yt,zt;
   xt = 0;
   yt = 0;
@@ -59,7 +45,7 @@ void ADXL345::printCalibrationValues(int samples)
 
   for(int i=0; i<samples; i++)
     {
-      AccelG accel = readAccelG();
+      Vector accel = readNormalize();
       xt += accel.x;
       yt += accel.y;
       zt += accel.z;
@@ -87,40 +73,28 @@ void ADXL345::writeTo(byte address, byte val)
   Wire.endTransmission(); // end transmission
 }
 
-AccelG ADXL345::readAccelG()
+Vector ADXL345::readNormalize(float gravityFactor)
 {
-  AccelRaw raw;
-  raw = readAccel();
+  Vector raw;
+  raw = readRaw();
 
-  //Scale = (16*2)/2^13
-
-  double fXg, fYg, fZg;
-  fXg =raw.x * 0.00390625 + _xoffset;
-  fYg =raw.y * 0.00390625 + _yoffset;
-  fZg =raw.z * 0.00390625 + _zoffset;
-
-  AccelG res;
-
-  res.x = fXg * ALPHA + (xg * (1.0-ALPHA));
-  xg = res.x;
-
-  res.y = fYg * ALPHA + (yg * (1.0-ALPHA));
-  yg = res.y;
-  res.z = fZg * ALPHA + (zg * (1.0-ALPHA));
-  zg = res.z;
-
-  return res;
+  Vector n;
+  n.x = raw.x * 0.004 * gravityFactor;
+  n.y = raw.y * 0.004 * gravityFactor;
+  n.z = raw.z * 0.004 * gravityFactor;
+  
+  return n;
 
 
 }
 
-AccelRaw ADXL345::readAccel()
+Vector ADXL345::readRaw()
 {
   readFrom(ADXL345_DATAX0, ADXL345_TO_READ, _buff); //read the acceleration data from the ADXL345
 
   // each axis reading comes in 16 bit resolution, ie 2 bytes. Least Significat Byte first!!
   // thus we are converting both bytes in to one int
-  AccelRaw raw;
+  Vector raw;
   raw.x = (((int)_buff[1]) << 8) | _buff[0];
   raw.y = (((int)_buff[3]) << 8) | _buff[2];
   raw.z = (((int)_buff[5]) << 8) | _buff[4];

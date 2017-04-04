@@ -1,6 +1,7 @@
 #ifndef ADXL345_h
 #define ADXL345_h
 
+#include "Vector.h"
 #include <Wire.h>
 #include "Arduino.h"
 
@@ -16,25 +17,8 @@
 
 #define ALPHA 0.5
 
-struct AccelRaw  //create 'vector' for raw data
-{
-  int x;
-  int y;
-  int z;
-};
+#define ADXL345_GRAVITY_EARTH 9.80665f
 
-struct AccelG
-{
-  double x;
-  double y;
-  double z;
-};
-
-struct AccelRotation
-{
-  double pitch;
-  double roll;
-};
 
 class ADXL345
 {
@@ -42,13 +26,12 @@ class ADXL345
   ADXL345();
   void init(char xoff=0, char yoff=0, char zoff=0);
   void writeTo(byte address, byte val);
-  AccelRaw readAccel();
-  AccelG readAccelG();
+  Vector readRaw();
+  Vector readNormalize(float gravityFactor = ADXL345_GRAVITY_EARTH);
   void printAllRegister();
   void print_byte(byte val);
   void printCalibrationValues(int samples);
   void readFrom(byte address, int num, byte _buff[]);
-  AccelRotation readPitchRoll();
   void setSoftwareOffset(double x, double y, double z);
 
  private:

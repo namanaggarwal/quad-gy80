@@ -3,6 +3,8 @@
 
 #include <Wire.h>
 #include "Arduino.h"
+#include "Vector.h"
+
 
 #define L3G4200D_DEVICE 105
 #define L3G4200D_BYTES_READ 6
@@ -23,20 +25,6 @@
 #define ALPHA_G 0.3
 
 
-struct GyroRaw
-{
-  int x;
-  int y;
-  int z;
-};
-
-struct GyroDPS
-{
-  double x;
-  double y;
-  double z;
-};
-
 class L3G4200D
 {
  public:
@@ -44,8 +32,8 @@ class L3G4200D
   void init(double xoffset=0, double yoffset=0, double zoffset=0);
   void writeTo(byte address, byte val);
   void readFrom(byte address, int num, byte _buff[]);
-  GyroRaw readGyro();
-  GyroDPS readGyroDPS();
+  Vector readRaw();
+  Vector readNormalize();
   void printAllRegister();
   void print_byte(byte val);
   void printCalibrationValues(int samples);

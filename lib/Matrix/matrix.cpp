@@ -27,7 +27,7 @@ Matrix& Matrix::operator=( const Matrix& other ) {
   return *this;
 }
 
-// Default Print Function
+// Default Print Function -- all print statements need to be removed. 
 void Matrix::printMatrix() {
   std::cout << "| ";
   double curr_val;

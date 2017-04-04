@@ -20,7 +20,6 @@ void L3G4200D::init(double xoffset, double yoffset, double zoffset)
  
 void L3G4200D::printCalibrationValues(int samples)
 {
-  double x,y,z;
   double xt,yt,zt;
   xt = 0;
   yt = 0;
@@ -35,7 +34,7 @@ void L3G4200D::printCalibrationValues(int samples)
    
   for(int i=0; i<samples; i++)
   {
-    GyroDPS dps = readGyroDPS();
+    Vector dps = readNormalize();
     xt += dps.x;
     yt += dps.y;
     zt += dps.z;
@@ -53,19 +52,19 @@ void L3G4200D::printCalibrationValues(int samples)
   delay(2000);
 }
  
-GyroDPS L3G4200D::readGyroDPS()
+Vector L3G4200D::readNormalize()
 {
   //deafult 250dps = 8.75 mdps/digit
    
-  GyroRaw raw;
-  raw = readGyro();
+  Vector raw;
+  raw = readRaw();
    
   double fXg, fYg, fZg;
   fXg = raw.x * 0.00875 + _xoffset;
   fYg = raw.y * 0.00875 + _yoffset;
   fZg = raw.z * 0.00875 + _zoffset;
  
-  GyroDPS dps;
+  Vector dps;
    
   dps.x = fXg * ALPHA_G + (xg * (1.0-ALPHA_G));
   xg = dps.x;
@@ -81,13 +80,13 @@ GyroDPS L3G4200D::readGyroDPS()
    
 }
  
-GyroRaw L3G4200D::readGyro() 
+Vector L3G4200D::readRaw() 
 {
   readFrom(L3G4200D_OUT_X_L | 0x80, L3G4200D_BYTES_READ, _buff); //0x80 enable auto increment (who would have known?)
  
   // each axis reading comes in 16 bit resolution, ie 2 bytes. Least Significat Byte first!!
   // thus we are converting both bytes in to one int
-  GyroRaw raw;
+  Vector raw;
    
   raw.x = (((int)_buff[1]) << 8) | _buff[0];
   raw.y = (((int)_buff[3]) << 8) | _buff[2];
