@@ -89,7 +89,6 @@ class HMC5883L
 
   void setOffset(int xoffset, int yoffset);
   
-  Vector readCompass();
   Vector readRaw();
   
   void printAllRegister();

@@ -3,7 +3,7 @@
 
 HMC5883L::HMC5883L()
 {
-  Serial.print("Starting HMC");
+  //Serial.print("Starting HMC");
 }
 
 bool HMC5883L::init() {
@@ -36,7 +36,7 @@ bool HMC5883L::init() {
 
 //still in dev
 void HMC5883L::calibrate() {
-  int minX, minY, maxX, maxY, offX, offY;
+  /*  int minX, minY, maxX, maxY, offX, offY;
   minX = minY = maxX = maxY = 0;
   offX = offY = 0;
   for(int i = 0; i < 1000; i++) // take 1000 samples
@@ -56,6 +56,7 @@ void HMC5883L::calibrate() {
   Serial.println(offX);
   Serial.print("Calculated Y Offset: ");
   Serial.println(offY);
+  */
 }
 
 void HMC5883L::setRange(hmc5883l_range_t range) {
@@ -196,10 +197,6 @@ Vector HMC5883L::readRaw() {
   Magneto.y = ((int)_buff[5]) << 8 | _buff[4];
 
   return Magneto;
-}
-
-Vector HMC5883L::readCompass() {
-
 }
 
 void HMC5883L::readFrom(byte address, int num, byte _buff[]) {

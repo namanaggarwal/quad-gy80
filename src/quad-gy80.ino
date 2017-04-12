@@ -1,70 +1,34 @@
 #include <Wire.h>
 #include <TimerOne.h>
  
-#include "ADXL345.h"
-#include "L3G4200D.h"
-//Gyro sampling rate in micro seconds
-#define SampleRate 10000
+#include "Navi.h"
 
-ADXL345 accel;
-L3G4200D gyro;
 
-bool readGyro;
-unsigned long pT; //previous time
-
-Vector a;
-Vector g;
-Vector c;
+ADXL345 adxl345;
+L3G4200D l3g4200d;
+HMC5883L hmc5883l;
+Navi navi(&adxl345, &l3g4200d, &hmc5883l);
 
 void setup()
 {
-   
-  Serial.begin(9600);
-   
-  Serial.println("Ready.");
-  Wire.begin();
-   
-  
-  accel.init(0,0,0);
-  gyro.init(0,0,0);
-  //accel.printCalibrationValues(40);
-  //gyro.printCalibrationValues(40);
- 
-    
-  pT = 0;
-  readGyro = false;
-      
-  Timer1.initialize(SampleRate);
-  Timer1.attachInterrupt( timerIsr );
 
-  Serial.print("Printing Gryo values");
-}
- 
-void timerIsr()
-{
-  readGyro = true;
+  // Initialize Serial Communication on Arduino
+  Serial.begin(9600);
+  Serial.println("Starting Up.");
+  Wire.begin();
+
+  // Initialize Sensors
+  if(navi.init() == 0) {
+    Serial.print("Navi could not initialize!!");
+  }
+  else Serial.print("Navi Initialized");
+   
 }
  
 void loop()
 {
-   
-  //TEST LOOP
-  a = accel.readNormalize();
-  g = gyro.readNormalize();
-  /*
-  Serial.print("X: ");
-  Serial.print(a.x);
-  Serial.print("\tY: ");
-  Serial.print(a.y);
-  Serial.print("\tZ: ");
-  Serial.println(a.z);
-  */
-  Serial.print("X: ");
-  Serial.print(g.x);
-  Serial.print("\tY: ");
-  Serial.print(g.y);
-  Serial.print("\tZ: ");
-  Serial.println(g.z);
- 
-
+  //navi.printSensorInfo();
+  navi.UpdateState();
+  delay(500);
+  
 }
