@@ -1,11 +1,10 @@
 #include "Arduino.h"
 #include "Matrix.h"
 
-template <class T>
-class Kalman
+template <typename T> class Kalman
 {
  public:
-  Kalman(T sensordata); //data can be of any type here -- floats, doubles, ints, etc
+  Kalman(T *sensordata); //data can be of any type here
   Matrix PredictState();
  private:
   Matrix currState;
@@ -29,4 +28,38 @@ class Kalman
 //         P_k = (I - KH) * P_kh
 //         X_p
 //
-// Process repeats 
+// Process repeats
+
+const Matrix Ident2 = [1, 0,
+		       0, 1];
+
+const Matrix Ident3 = [1, 0, 0,
+		       0, 1, 0,
+		       0, 0, 1];
+
+const Matrix Ident4 = [1, 0, 0, 0,
+		       0, 1, 0, 0,
+		       0, 0, 1, 0,
+		       0, 0, 0, 1];
+
+const Matrix Ident5 = [1, 0, 0, 0, 0,
+		       0, 1, 0, 0, 0,
+		       0, 0, 1, 0, 0,
+		       0, 0, 0, 1, 0,
+		       0, 0, 0, 0, 1];
+
+const Matrix Ident6 = [1, 0, 0, 0, 0, 0,
+		       0, 1, 0, 0, 0, 0,
+		       0, 0, 1, 0, 0, 0,
+		       0, 0, 0, 1, 0, 0,
+		       0, 0, 0, 0, 1, 0,
+		       0, 0, 0, 0, 0, 1];
+
+const Matrix Ident7 = [1, 0, 0, 0, 0, 0, 0,
+		       0, 1, 0, 0, 0, 0, 0,
+		       0, 0, 1, 0, 0, 0, 0,
+		       0, 0, 0, 1, 0, 0, 0,
+		       0, 0, 0, 0, 1, 0, 0,
+		       0, 0, 0, 0, 0, 1, 0,
+		       0, 0, 0, 0, 0, 0, 1];
+
