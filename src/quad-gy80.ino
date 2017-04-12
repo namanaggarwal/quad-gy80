@@ -8,7 +8,7 @@ ADXL345 adxl345;
 L3G4200D l3g4200d;
 HMC5883L hmc5883l;
 Navi navi(&adxl345, &l3g4200d, &hmc5883l);
-
+//commit test
 void setup()
 {
 
