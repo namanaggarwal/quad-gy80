@@ -4,62 +4,47 @@
 template <typename T> class Kalman
 {
  public:
-  Kalman(T *sensordata); //data can be of any type here
-  Matrix PredictState();
+  // regular functions
+  Kalman(T *sensor_data); //data can be of any type here
+  Matrix PredictState(int time);
  private:
+  // helper functions
+  Matrix calcStateMatrix();
+  Matrix calcProcessControlMatrix();
+  Matrix calcKalmanGain();
+  Matrix calcNewMeasurement();
+  Matrix getPrediction();
+  Matrix setPrevState();
+  Matrix setCurrentState();
+
+  // variables required between states
   Matrix currState;
   Matrix prevState;
+
+  // data source for filter
+  T* sensor_source;
+
+  // time between cycles (defaults to 1??)
+  int time_cycle = 1;
+
+  // Standard Identity Matrices
+  const static Matrix Ident2 = Matrix(2,2,[1, 0, 0, 1]);
+
+  const static Matrix Ident3 = Matrix(3,3,[1, 0, 0, 0, 1, 0, 0, 0, 1]);
+
+  const static Matrix Ident4 =
+    Matrix(4,4,[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+  const static Matrix Ident5 = Matrix(5,5,[1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
+
+  const static Matrix Ident6 = Matrix(6,6,[1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1]);
+
+  const static Matrix Ident7 = Matrix(7,7,[1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]);
+
+
 };
 
-// initial input is used to calculate the current state
-// the current predicted  state with:
-//         X_kp = AX_k-1 + Bu_k + w_k
-// We also calculate the process control matrix:
-//         P_k = AP_k-1 * A^T + Q_k
-//
-// These matrices are used to calculate the Kalman Gain (KG)
-//         K = (P_kp * H) / (H * P_kp * H^T + R)
-//         X_k = X_kp + K( Y - H * X_kp ) <- updated state
-//         * H is used to transform the values so the
-//         multiplication/division can work properly
-//
-// Current becomes the previous state and is outputted as
-// the currently predicted state
-//         P_k = (I - KH) * P_kh
-//         X_p
-//
-// Process repeats
 
-const Matrix Ident2 = [1, 0,
-		       0, 1];
 
-const Matrix Ident3 = [1, 0, 0,
-		       0, 1, 0,
-		       0, 0, 1];
 
-const Matrix Ident4 = [1, 0, 0, 0,
-		       0, 1, 0, 0,
-		       0, 0, 1, 0,
-		       0, 0, 0, 1];
-
-const Matrix Ident5 = [1, 0, 0, 0, 0,
-		       0, 1, 0, 0, 0,
-		       0, 0, 1, 0, 0,
-		       0, 0, 0, 1, 0,
-		       0, 0, 0, 0, 1];
-
-const Matrix Ident6 = [1, 0, 0, 0, 0, 0,
-		       0, 1, 0, 0, 0, 0,
-		       0, 0, 1, 0, 0, 0,
-		       0, 0, 0, 1, 0, 0,
-		       0, 0, 0, 0, 1, 0,
-		       0, 0, 0, 0, 0, 1];
-
-const Matrix Ident7 = [1, 0, 0, 0, 0, 0, 0,
-		       0, 1, 0, 0, 0, 0, 0,
-		       0, 0, 1, 0, 0, 0, 0,
-		       0, 0, 0, 1, 0, 0, 0,
-		       0, 0, 0, 0, 1, 0, 0,
-		       0, 0, 0, 0, 0, 1, 0,
-		       0, 0, 0, 0, 0, 0, 1];
 
