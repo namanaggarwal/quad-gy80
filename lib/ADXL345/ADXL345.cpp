@@ -5,9 +5,7 @@
 
 ADXL345::ADXL345()
 {
-  xg = 0;
-  yg = 0;
-  zg = 0;
+  
 }
 
 void ADXL345::init(char x_offset, char y_offset, char z_offset)
@@ -88,7 +86,7 @@ Vector ADXL345::readNormalize(float gravityFactor)
 
 }
 
-Vector ADXL345::readRaw()
+Vector ADXL345::Update()
 {
   readFrom(ADXL345_DATAX0, ADXL345_TO_READ, _buff); //read the acceleration data from the ADXL345
 

@@ -80,18 +80,20 @@ Vector L3G4200D::readNormalize()
    
 }
  
-Vector L3G4200D::readRaw() 
+void L3G4200D::Update(double* target, int size) 
 {
-  readFrom(L3G4200D_OUT_X_L | 0x80, L3G4200D_BYTES_READ, _buff); //0x80 enable auto increment (who would have known?)
- 
-  // each axis reading comes in 16 bit resolution, ie 2 bytes. Least Significat Byte first!!
-  // thus we are converting both bytes in to one int
-  Vector raw;
-   
-  raw.x = (((int)_buff[1]) << 8) | _buff[0];
-  raw.y = (((int)_buff[3]) << 8) | _buff[2];
-  raw.z = (((int)_buff[5]) << 8) | _buff[4];
-   
+  // gyroscope Update function will always return an
+  // array of size 6. Reading the gyroscope lets us
+  // acquire the velocity of it's angular rotation in
+  // quids. 
+  readFrom(L3G4200D_OUT_X_L | 0x80, L3G4200D_BYTES_READ, buff_); 
+  
+  Vector dps;
+  dps.x = ((((int)buff_[1]) << 8) | buff_[0])
+  dps.y = (((int)buff_[3]) << 8) | buff_[2];
+  dps.z = (((int)buff_[5]) << 8) | buff_[4];
+
+  
   return raw;
 }
  
@@ -104,8 +106,8 @@ void L3G4200D::writeTo(byte address, byte val)
   Wire.endTransmission(); // end transmission
 }
  
-// Reads num bytes starting from address register on device in to _buff array
-void L3G4200D::readFrom(byte address, int num, byte _buff[])
+// Reads num bytes starting from address register on device in to buff_ array
+void L3G4200D::readFrom(byte address, int num, byte buff_[])
 {
   Wire.beginTransmission(L3G4200D_DEVICE); // start transmission to device
   Wire.write(address); // sends address to read from
@@ -117,7 +119,7 @@ void L3G4200D::readFrom(byte address, int num, byte _buff[])
   int i = 0;
   while(Wire.available()) // device may send less than requested (abnormal)
   {
-    _buff[i] = Wire.read(); // receive a byte
+    buff_[i] = Wire.read(); // receive a byte
     i++;
   }
   if(i != num)

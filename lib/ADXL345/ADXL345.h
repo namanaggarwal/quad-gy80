@@ -20,13 +20,13 @@
 #define ADXL345_GRAVITY_EARTH 9.80665f
 
 
-class ADXL345
+class ADXL345 : public Sensor
 {
  public:
   ADXL345();
   void init(char xoff=0, char yoff=0, char zoff=0);
   void writeTo(byte address, byte val);
-  Vector readRaw();
+  Vector Update();
   Vector readNormalize(float gravityFactor = ADXL345_GRAVITY_EARTH);
   void printAllRegister();
   void print_byte(byte val);
@@ -36,8 +36,6 @@ class ADXL345
 
  private:
   byte _buff[6];
-
-  double xg, yg, zg;
   double _xoffset, _yoffset, _zoffset;
 
 };

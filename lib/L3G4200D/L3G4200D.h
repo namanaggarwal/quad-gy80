@@ -4,6 +4,7 @@
 #include <Wire.h>
 #include "Arduino.h"
 #include "Vector.h"
+#include "Sensor.h"
 
 
 #define L3G4200D_DEVICE 105
@@ -31,15 +32,15 @@ class L3G4200D
   L3G4200D();
   void init(double xoffset=0, double yoffset=0, double zoffset=0);
   void writeTo(byte address, byte val);
-  void readFrom(byte address, int num, byte _buff[]);
-  Vector readRaw();
+  void readFrom(byte address, int num, byte buff_[]);
+  void Update(double* target, int size);
   Vector readNormalize();
   void printAllRegister();
   void print_byte(byte val);
   void printCalibrationValues(int samples);
   
  private:
-  byte _buff[6];
+  byte buff_[6];
   double xg;
   double yg;
   double zg;
