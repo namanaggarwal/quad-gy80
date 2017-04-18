@@ -21,26 +21,30 @@ class Matrix {
   
   void printMatrix();
   
-  double& operator()(const int, const int);  
+  double& operator()( const int, const int );  
 
-  Matrix add(const Matrix);  
+  Matrix add( const Matrix );  
   Matrix& operator+( const Matrix& );
   
-  Matrix subtract(const Matrix);
+  Matrix subtract( const Matrix );
   Matrix& operator-( const Matrix& );
   
   Matrix multiply(Matrix);
+
   Matrix divide(Matrix);
-  
+
   Matrix& operator*( const Matrix& );
 
   Matrix transpose();
   Matrix inverse();
+
+  Matrix concatenate( const Matrix, int axis=0 );
     
   int getWidth();
   void setWidth(int);
   int getHeight();
   void setHeight(int);
+
  private:
   int width;
   int height;

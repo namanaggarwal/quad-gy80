@@ -1,4 +1,4 @@
-#include "Matrix.h"
+#include "matrix.h"
 
 
 Matrix::Matrix() {
@@ -27,6 +27,7 @@ Matrix& Matrix::operator=( const Matrix& other ) {
   std::memcpy(this->data, other.data, width*height*sizeof(double));
   return *this;
 }
+
 
 // Default Print Function -- all print statements need to be removed.
 void Matrix::printMatrix() {
@@ -153,6 +154,7 @@ Matrix& Matrix::operator*( const Matrix& other ) {
   return *this;
 }
 
+
 Matrix Matrix::divide(Matrix right) {
   // element division
   //check that matrices have appropriate dimensions
@@ -160,7 +162,6 @@ Matrix Matrix::divide(Matrix right) {
   assert(width == right.width);
   // create temporary array to load into resultant Matrix
   double data_temp[width*right.height];
-  double quotient = 0;
   for(int i = 0; i < height * right.width; i++) {
     if(right.data[i] == 0){
       data_temp[i] = 0;
@@ -171,15 +172,21 @@ Matrix Matrix::divide(Matrix right) {
   return r;
 }
 
+
 Matrix Matrix::transpose() {
+  //currently only works for square matrices
+
+  assert(width == height);
   double transpose[width*height];
-  for (int i = 0; i < width; i++) {
+  for(int i = 0; i < width; i++) {
     for(int j = 0; j < height; j++) {
       transpose[(j*width) + i] = data[(i*width) + j]; //write rows as columns and columns as rows
     }
   }
-  Matrix r = Matrix(width, height, transpose);
+
+  Matrix r = Matrix(width, height, transpose); // i.e, 2x1 -> 1x2
   return r;
+     
 }
 
 
@@ -246,8 +253,53 @@ Matrix Matrix::inverse() {
       } 
   } 
   return I;  
+}
+
+Matrix Matrix::concatenate(const Matrix right, int axis) {
+  // concatenate matrices together
+  // matrices must have same shape, except in the dimension corresponding
+  // to the axis (first axis by default)
+  //if(axis == 0) assert(width == right.width);
+  //if(axis == 1) assert(height == right.height);
+
+  // Create data structure to hold all the new data, must be
+  // of size left.size + right.size
+  
+  int new_size = (height*width) + (right.width * right.height);
+  double data_temp[new_size];
+  
+  int new_height = height;
+  int new_width = width;
+  
+  if(axis == 0){
+    assert(width == right.width);
+    std::copy(this->data, this->data+(width*height), data_temp);
+    std::copy(right.data, right.data+(right.width*right.height), data_temp+(width*height));
+    new_height = height + right.height;
+  }
+  if(axis == 1) {
+    int curr_row = 0;
+    int temp = 0;
+    for(int i = 0; i < new_size; i++) {
+      data_temp[i] = data[temp];
+      temp++;
+      if(i%width == width-1) { 
+	for(int j = 0; j < right.width; j++) {
+	  data_temp[i+1] = right.data[j + (right.width*curr_row)];
+	  i++;
+	  
+	}
+	curr_row++;
+      }
+    }
+    new_width = new_width + right.width;
+  }
+    
+  Matrix r = Matrix(new_height, new_width, data_temp);
+  return r;
  
 }
+
 
 int Matrix::getWidth() { return width; }
 void Matrix::setWidth(int nl) { width = nl; }
