@@ -2,7 +2,8 @@
 #define HMC5883L_h
 #include <Wire.h>
 #include "Arduino.h"
-#include "Vector.h"
+#include "Sensor.h"
+
 
 #define HMC5883L_DEVICE 0x1E      //device address
 
@@ -68,7 +69,7 @@ typedef enum
   } hmc5883l_range_t;
 
 
-class HMC5883L
+class HMC5883L : public Sensor
 {
  public:
   HMC5883L();
@@ -89,7 +90,7 @@ class HMC5883L
 
   void setOffset(int xoffset, int yoffset);
   
-  Vector readRaw();
+  Matrix Update();
   
   void printAllRegister();
   void print_byte(byte val);

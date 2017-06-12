@@ -36,27 +36,7 @@ bool HMC5883L::init() {
 
 //still in dev
 void HMC5883L::calibrate() {
-  /*  int minX, minY, maxX, maxY, offX, offY;
-  minX = minY = maxX = maxY = 0;
-  offX = offY = 0;
-  for(int i = 0; i < 1000; i++) // take 1000 samples
-    {
-      Vector raw = readCompass();
 
-      if (raw.x < minX) minX = raw.x;
-      if (raw.y < minY) minY = raw.y;
-      if (raw.x > maxX) maxX = raw.x;
-      if (raw.y > maxY) maxY = raw.y;
-    }
-  
-  offX = (maxX + minX)/2;
-  offY = (maxY + minY)/2;
-
-  Serial.print("Calculated X Offset: ");
-  Serial.println(offX);
-  Serial.print("Calculated Y Offset: ");
-  Serial.println(offY);
-  */
 }
 
 void HMC5883L::setRange(hmc5883l_range_t range) {
@@ -188,15 +168,18 @@ void HMC5883L::writeTo(byte address, byte val) {
   Wire.endTransmission();
 }
 
-Vector HMC5883L::readRaw() {
-  Vector Magneto;
+Matrix HMC5883L::Update() {
+
 
   readFrom(HMC5883L_OUT_X_MSB, HMC5883L_TO_READ, _buff);
-  Magneto.x = ((int)_buff[1]) << 8 | _buff[0];
-  Magneto.z = ((int)_buff[3]) << 8 | _buff[2];
-  Magneto.y = ((int)_buff[5]) << 8 | _buff[4];
 
-  return Magneto;
+  Matrix raw = Matrix(1,3);
+
+  raw(0) = ((int)_buff[1]) << 8 | _buff[0];
+  raw(1) = ((int)_buff[3]) << 8 | _buff[2];
+  raw(2) = ((int)_buff[5]) << 8 | _buff[4];
+
+  return raw;
 }
 
 void HMC5883L::readFrom(byte address, int num, byte _buff[]) {

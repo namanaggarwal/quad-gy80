@@ -3,7 +3,6 @@
 
 #include <Wire.h>
 #include "Arduino.h"
-#include "Vector.h"
 #include "Sensor.h"
 
 
@@ -33,8 +32,8 @@ class L3G4200D
   void init(double xoffset=0, double yoffset=0, double zoffset=0);
   void writeTo(byte address, byte val);
   void readFrom(byte address, int num, byte buff_[]);
-  void Update(double* target, int size);
-  Vector readNormalize();
+  Matrix Update();
+
   void printAllRegister();
   void print_byte(byte val);
   void printCalibrationValues(int samples);

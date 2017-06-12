@@ -1,9 +1,11 @@
 #ifndef ADXL345_h
 #define ADXL345_h
 
-#include "Vector.h"
+
 #include <Wire.h>
 #include "Arduino.h"
+#include "Sensor.h"
+
 
 #define ADXL345_DEVICE 0x53    //device address
 #define ADXL345_TO_READ 6
@@ -26,8 +28,8 @@ class ADXL345 : public Sensor
   ADXL345();
   void init(char xoff=0, char yoff=0, char zoff=0);
   void writeTo(byte address, byte val);
-  Vector Update();
-  Vector readNormalize(float gravityFactor = ADXL345_GRAVITY_EARTH);
+  Matrix Update();
+  Matrix readNormalize(float gravityFactor = ADXL345_GRAVITY_EARTH);
   void printAllRegister();
   void print_byte(byte val);
   void printCalibrationValues(int samples);

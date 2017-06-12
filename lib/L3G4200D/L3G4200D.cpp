@@ -20,78 +20,21 @@ void L3G4200D::init(double xoffset, double yoffset, double zoffset)
  
 void L3G4200D::printCalibrationValues(int samples)
 {
-  double xt,yt,zt;
-  xt = 0;
-  yt = 0;
-  zt = 0;
-   
-  Serial.print("Calibration in: 3");
-  delay(1000);
-  Serial.print(" 2");
-  delay(1000);  
-  Serial.println(" 1");  
-  delay(1000);  
-   
-  for(int i=0; i<samples; i++)
-  {
-    Vector dps = readNormalize();
-    xt += dps.x;
-    yt += dps.y;
-    zt += dps.z;
-    delay(100);
-  }
-   
-  Serial.println("Gyro Offset (dps): ");
-  Serial.print("X: ");
-  Serial.print(xt/float(samples),5);
-  Serial.print(" Y: ");
-  Serial.print(yt/float(samples),5);
-  Serial.print(" Z: ");
-  Serial.println( zt/float(samples),5);
-   
-  delay(2000);
-}
- 
-Vector L3G4200D::readNormalize()
-{
-  //deafult 250dps = 8.75 mdps/digit
-   
-  Vector raw;
-  raw = readRaw();
-   
-  double fXg, fYg, fZg;
-  fXg = raw.x * 0.00875 + _xoffset;
-  fYg = raw.y * 0.00875 + _yoffset;
-  fZg = raw.z * 0.00875 + _zoffset;
- 
-  Vector dps;
-   
-  dps.x = fXg * ALPHA_G + (xg * (1.0-ALPHA_G));
-  xg = dps.x;
-   
-  dps.y = fYg * ALPHA_G + (yg * (1.0-ALPHA_G));
-  yg = dps.y;
-   
-  dps.z = fZg * ALPHA_G + (zg * (1.0-ALPHA_G));
-  zg = dps.z;
-   
-  return dps;
-   
    
 }
  
-void L3G4200D::Update(double* target, int size) 
+Matrix L3G4200D::Update() 
 {
   // gyroscope Update function will always return an
   // array of size 6. Reading the gyroscope lets us
   // acquire the velocity of it's angular rotation in
   // quids. 
-  readFrom(L3G4200D_OUT_X_L | 0x80, L3G4200D_BYTES_READ, buff_); 
+  readFrom(L3G4200D_OUT_X_L | 0x80, L3G4200D_BYTES_READ, buff_);
+  Matrix raw = Matrix(1,3);
   
-  Vector dps;
-  dps.x = ((((int)buff_[1]) << 8) | buff_[0])
-  dps.y = (((int)buff_[3]) << 8) | buff_[2];
-  dps.z = (((int)buff_[5]) << 8) | buff_[4];
+  raw(0) = ((((int)buff_[1]) << 8) | buff_[0]);
+  raw(1) = (((int)buff_[3]) << 8) | buff_[2];
+  raw(2) = (((int)buff_[5]) << 8) | buff_[4];
 
   
   return raw;

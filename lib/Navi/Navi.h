@@ -20,11 +20,6 @@ class Navi
   HMC5883L* compass;
   //BMP085 alti;
 
-  Vector a;
-  Vector g;
-  Vector c;
-  Vector i;
-  
   float state[7];
 };
 

@@ -2,27 +2,29 @@
 #define MATRIX_H
 
 #include "assert.h"
-#include <iostream>
-#include <stdexcept>
-#include <math.h>
-#include <cstring>
+#include "Arduino.h"
 
-#define MAX_MATRIX_SIZE 64
+#include <math.h>
+
+
+#define MAX_MATRIX_SIZE 100
 
 class Matrix {
  public: 
   // Constructor
   Matrix();  
   // Alt Constructors  
-  Matrix(int h, int w, double d[]);  
+  Matrix(int h, int w, double d[]);
+  Matrix(int h, int w);
   Matrix( const Matrix& other );  
   Matrix& operator=( const Matrix& other ); 
 
   
   void printMatrix();
   
-  double& operator()( const int, const int );  
-
+  double& operator()( const int, const int );
+  double& operator()( const int );
+  
   Matrix add( const Matrix );  
   Matrix& operator+( const Matrix& );
   

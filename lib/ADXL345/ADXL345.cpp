@@ -43,11 +43,11 @@ void ADXL345::printCalibrationValues(int samples)
 
   for(int i=0; i<samples; i++)
     {
-      Vector accel = readNormalize();
-      xt += accel.x;
-      yt += accel.y;
-      zt += accel.z;
-      delay(100);
+      //Vector accel = readNormalize();
+      //xt += accel.x;
+      //yt += accel.y;
+      //zt += accel.z;
+      //delay(100);
     }
 
   Serial.println("Accel Offset (mg): ");
@@ -71,32 +71,19 @@ void ADXL345::writeTo(byte address, byte val)
   Wire.endTransmission(); // end transmission
 }
 
-Vector ADXL345::readNormalize(float gravityFactor)
-{
-  Vector raw;
-  raw = readRaw();
-
-  Vector n;
-  n.x = raw.x * 0.004 * gravityFactor;
-  n.y = raw.y * 0.004 * gravityFactor;
-  n.z = raw.z * 0.004 * gravityFactor;
-  
-  return n;
-
-
-}
-
-Vector ADXL345::Update()
+Matrix ADXL345::Update()
 {
   readFrom(ADXL345_DATAX0, ADXL345_TO_READ, _buff); //read the acceleration data from the ADXL345
 
   // each axis reading comes in 16 bit resolution, ie 2 bytes. Least Significat Byte first!!
   // thus we are converting both bytes in to one int
-  Vector raw;
-  raw.x = (((int)_buff[1]) << 8) | _buff[0];
-  raw.y = (((int)_buff[3]) << 8) | _buff[2];
-  raw.z = (((int)_buff[5]) << 8) | _buff[4];
+  // arr is form {x, y, z} with w = 1 and h = 3 (vector)
+  //double arrRaw[3] = {(((int)_buff[1]) << 8) | _buff[0],(((int)_buff[3]) << 8) | _buff[2], (((int)_buff[5]) << 8) | _buff[4]};
 
+  Matrix raw = Matrix(1, 3);
+  raw(0) = (((int)_buff[1]) << 8) | _buff[0];
+  raw(1) = (((int)_buff[3]) << 8) | _buff[2];
+  raw(2) = (((int)_buff[5]) << 8) | _buff[4];
   return raw;
 }
 
