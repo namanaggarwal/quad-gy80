@@ -5,3 +5,8 @@
 .travis.yml
 .pioenvs
 .build_ano
+
+#gtags information
+GPATH
+GRTAGS
+GTAGS

@@ -4,8 +4,9 @@
 #include "ADXL345.h"
 #include "L3G4200D.h"
 #include "HMC5883L.h"
-//#include "Kalman.h"
-//#include "Arduino.h"
+#include "matrix.h"
+#include "Kalman.h"
+
 
 class Navi
 {
@@ -14,13 +15,19 @@ class Navi
   bool init();
   void UpdateState();
   void printSensorInfo();
+  
  private:
   ADXL345* accel;
   L3G4200D* gyro;
   HMC5883L* compass;
   //BMP085 alti;
+  //Kalman Kalman
 
   float state[7];
+
+  Matrix a = Matrix(1,3);
+  Matrix g = Matrix(1,3);
+  Matrix c = Matrix(1,3);
 };
 
 #endif

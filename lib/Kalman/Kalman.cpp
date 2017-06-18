@@ -1,7 +1,5 @@
-#include "kalman.h"
-#include "iostream"
+#include "Kalman.h"
 
-using namespace std;
 
 Kalman::Kalman(Sensor* sen_a, Sensor* sen_b) {
   // filter needs to acquire data at every iteration in order
@@ -65,9 +63,9 @@ Kalman::Kalman(Sensor* sen_a, Sensor* sen_b) {
   
   // Generate First Step outside iteration loop
   //X_k_1 -> 6x1
-  double arrX_k_1[6];
-  sensor_a->Update(arrX_k_1, 6);
-  Matrix X_k_1 = Matrix(6, 1, arrX_k_1);
+  //double arrX_k_1[6];
+  //sensor_a->Update(arrX_k_1, 6);
+  Matrix X_k_1 = Matrix(6, 1) = sensor_a->Update();
   currState = X_k_1;
 }
 
@@ -75,11 +73,9 @@ Matrix Kalman::PredictState(int time) {
   // initial input is used to calculate the current state
   // the current predicted  state with:
   //         X_kp = AX_k-1 + Bu_k + w_k
-  cout << "Calculating State Matrix" << endl;
   calcStateMatrix();
   // We also calculate the process control matrix:
   //         P_k = AP_k-1 * A^T + Q_k
-  cout << "Calculating Process Control Matrix" << endl;
   calcProcessControlMatrix();
   // These matrices are used to calculate the Kalman Gain (KG)
   //         K = (P_kp * H) / (H * P_kp * H^T + R)
