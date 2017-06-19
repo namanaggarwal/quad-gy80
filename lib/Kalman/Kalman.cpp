@@ -1,5 +1,19 @@
 #include "Kalman.h"
 
+/* This class performs Kalman Filtering on two sensors
+Input: Two Sensor Class Pointers (accel/gyro)
+Output: Predicted State of Quadcopter in the form:
+[ x     theta_x
+  y     theta_y
+  z     theta_z
+  v_x0  w_x
+  v_y0  w_y
+  v_z0  w_z  ]
+
+The functions and operations of this class are for a 
+standard Kalman Filter and may be inefficient in actual
+practice.
+*/
 
 Kalman::Kalman(Sensor* sen_a, Sensor* sen_b) {
   // filter needs to acquire data at every iteration in order
@@ -53,12 +67,24 @@ Kalman::Kalman(Sensor* sen_a, Sensor* sen_b) {
   R = Matrix(6,6,arrR);
   
   // Generate PCM now
-  double arrPCM[36] = {pep[0]*pep[0], pep[0]*pep[1], pep[0]*pep[2], pep[0]*pev[0], pep[0]*pev[1], pep[0]*pev[2],
-                pep[1]*pep[0], pep[1]*pep[1], pep[1]*pep[2], pep[1]*pev[0], pep[1]*pev[1], pep[1]*pev[2],
-                pep[2]*pep[0], pep[2]*pep[1], pep[2]*pep[2], pep[2]*pev[0], pep[2]*pev[1], pep[2]*pev[2],
-                pev[0]*pep[0], pev[0]*pep[1], pev[0]*pep[2], pev[0]*pev[0], pev[0]*pev[1], pev[0]*pev[2], 
-                pev[1]*pep[0], pev[1]*pep[1], pev[1]*pep[2], pev[1]*pev[0], pev[1]*pev[1], pev[1]*pev[2],
-                pev[2]*pep[0], pev[2]*pep[1], pev[2]*pep[2], pev[2]*pev[0], pev[2]*pev[1], pev[2]*pev[2]};
+  double arrPCM[36] = {pep[0]*pep[0], pep[0]*pep[1],
+		       pep[0]*pep[2], pep[0]*pev[0],
+		       pep[0]*pev[1], pep[0]*pev[2],
+		       pep[1]*pep[0], pep[1]*pep[1],
+		       pep[1]*pep[2], pep[1]*pev[0],
+		       pep[1]*pev[1], pep[1]*pev[2],
+		       pep[2]*pep[0], pep[2]*pep[1],
+		       pep[2]*pep[2], pep[2]*pev[0],
+		       pep[2]*pev[1], pep[2]*pev[2],
+		       pev[0]*pep[0], pev[0]*pep[1],
+		       pev[0]*pep[2], pev[0]*pev[0],
+		       pev[0]*pev[1], pev[0]*pev[2],
+		       pev[1]*pep[0], pev[1]*pep[1],
+		       pev[1]*pep[2], pev[1]*pev[0],
+		       pev[1]*pev[1], pev[1]*pev[2],
+		       pev[2]*pep[0], pev[2]*pep[1],
+		       pev[2]*pep[2], pev[2]*pev[0],
+		       pev[2]*pev[1], pev[2]*pev[2]};
   PCM = Matrix(6,6, arrPCM);
   
   // Generate First Step outside iteration loop
@@ -74,38 +100,43 @@ Matrix Kalman::PredictState(int time) {
   // the current predicted  state with:
   //         X_kp = AX_k-1 + Bu_k + w_k
   calcStateMatrix();
+  
   // We also calculate the process control matrix:
   //         P_k = AP_k-1 * A^T + Q_k
   calcProcessControlMatrix();
+  
   // These matrices are used to calculate the Kalman Gain (KG)
   //         K = (P_kp * H) / (H * P_kp * H^T + R)
   //         X_k = X_kp + K( Y - H * X_kp ) <- updated state
   //         * H is used to transform the values so the
   //         multiplication/division can work properly
   calcKalmanGain();
+  
   calcNewMeasurement();
   // Current becomes the previous state and is outputted as
   // the currently predicted state
   //         P_k = (I - KH) * P_kh
   //         X_p
   calcCurrentState();
+  
   //state time is given by parameter
   time_cycle = time;
+
+  //return current state
+  return currState;
 }
 
 void Kalman::calcStateMatrix() {
   // X_kp = A*X_k_1 + B*u_k + w_k
   
-  double arrU_k[3];
-  sensor_b->Update(arrU_k, 3);              
-  //U_k -> 3x1
-  Matrix U_k = Matrix(3,1, arrU_k);
+  //u_k -> 3x1
+  Matrix u_k = sensor_b->Update();
   
   //w_k -> 6x1 noise/error/uncertainty
   
   //X_kp -> 6x1 Matrix
   X_kp = A.multiply(X_k_1);
-  X_kp = X_kp.add(B.multiply(U_k)); //add w_k later
+  X_kp = X_kp.add(B.multiply(u_k)); //add w_k later
   
 }
 
@@ -123,12 +154,9 @@ void Kalman::calcKalmanGain() {
 void Kalman::calcNewMeasurement() {
   //Y_k = C*Y_km + Zk
   //retrieve new measurement from sensor_a:
-  double arrYkm[6];
-  sensor_a->Update(arrYkm, 6);
-  Matrix Ykm = Matrix(6, 1, arrYkm);
+  Matrix Ykm = sensor_a->Update();
   // H is already the Identity Matrix
   Yk = H.multiply(Ykm); //add Zk later for noise
-  
 }
 
 void Kalman::calcCurrentState() {
@@ -140,7 +168,7 @@ void Kalman::calcCurrentState() {
 void Kalman::updateFilter() {
   //Pk = (I - KH)*Pkp
   // H = I in this icase
-  Pk = H.subtract(KG.multiply(H)).multiply(Pkp);
+  Matrix Pk = H.subtract(KG.multiply(H)).multiply(Pkp);
   X_k_1 = Xk;
   PCM = Pk;
 }

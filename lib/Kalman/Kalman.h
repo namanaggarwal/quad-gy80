@@ -19,32 +19,25 @@ class Kalman
   void calcNewMeasurement();
   void calcCurrentState();
   void updatePCM();
-  
-  
+  void updateFilter();
+
+  Matrix getCurrState();
   void getPrediction();
   void setPrevState();
-  void setCurrentState();
+  void setCurrState();
 
   // variables required between states
-  double arrStandard61[6] = {0,0,0,0,0,0};
-  double arrStandard66[36] = {0,0,0,0,0,0,
-                            0,0,0,0,0,0,
-                            0,0,0,0,0,0,
-                            0,0,0,0,0,0,
-                            0,0,0,0,0,0,
-                            0,0,0,0,0,0};
-                            
-  Matrix PCM = Matrix(6,6,arrStandard66);
-  Matrix A = Matrix(6,6,arrStandard66);
+  Matrix PCM = Matrix(6,6);
+  Matrix A = Matrix(6,6);
   Matrix B = Matrix(6,3);
-  Matrix X_kp = Matrix(6,1,arrStandard61);
-  Matrix X_k_1 = Matrix(6,1,arrStandard61);
-  Matrix Pkp = Matrix(6,6,arrStandard66);
-  Matrix KG = Matrix(6,6,arrStandard66);
-  Matrix Yk = Matrix(6,1, arrStandard61);
-  Matrix Xk = Matrix(6,1, arrStandard61);
-  Matrix H = Matrix(6,6, arrStandard66);
-  Matrix R = Matrix(6,1, arrStandard66);
+  Matrix X_kp = Matrix(6,1);
+  Matrix X_k_1 = Matrix(6,1);
+  Matrix Pkp = Matrix(6,6);
+  Matrix KG = Matrix(6,6);
+  Matrix Yk = Matrix(6,1);
+  Matrix Xk = Matrix(6,1);
+  Matrix H = Matrix(6,6);
+  Matrix R = Matrix(6,1);
   Matrix currState = Matrix(6,1);
   // Process and Observational Error -- values inserted are test values
   double pep[3] = {2, 2, 2};

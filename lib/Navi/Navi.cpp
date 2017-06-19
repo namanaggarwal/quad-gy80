@@ -13,7 +13,7 @@ bool Navi::init() {
   Serial.println("Navi initializing...");
   accel->init(0,0,0);
   gyro->init(0,0,0);
-  compass->init(0,0,0);
+  compass->init();
 
   return true;
 }
@@ -23,9 +23,9 @@ void Navi::UpdateState() {
   //
   // get next state based on previous state
   Serial.println("Updating State");
-  a = accel.Update();
-  g = gyro.Update();
-  c = compass.Update();
+  a = accel->Update();
+  g = gyro->Update();
+  c = compass->Update();
 }
 
 void Navi::printSensorInfo() {
