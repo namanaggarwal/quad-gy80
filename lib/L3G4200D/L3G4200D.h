@@ -25,28 +25,43 @@
 #define ALPHA_G 0.3
 
 
-class L3G4200D
+class L3G4200D : public Sensor
 {
  public:
   L3G4200D();
+  
+  void Update();
+  Matrix getVelocity();
+  Matrix getAcceleration();
+  
   void init(double xoffset=0, double yoffset=0, double zoffset=0);
+  
+  // IO
   void writeTo(byte address, byte val);
   void readFrom(byte address, int num, byte buff_[]);
-  Matrix Update();
-
+  
+  // Calibration
+  void printCalibrationValues(int samples);
+  
+  // DEBUG
   void printAllRegister();
   void print_byte(byte val);
-  void printCalibrationValues(int samples);
+  
   
  private:
   byte buff_[6];
   double xg;
   double yg;
   double zg;
+  
+  unsigned long int last_recorded_time = 0;
 
   double _xoffset;
   double _yoffset;
   double _zoffset;
+  
+  Matrix data_ang_velocity(1,3);
+  Matrix data_ang_acceleration(1,3);
 
 };
 

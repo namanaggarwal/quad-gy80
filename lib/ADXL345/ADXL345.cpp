@@ -1,12 +1,33 @@
 #include "Arduino.h"
 #include "ADXL345.h"
-
 #include <math.h>
 
-ADXL345::ADXL345()
+ADXL345::ADXL345() {}
+
+void ADXL345::Update()
 {
+  readFrom(ADXL345_DATAX0, ADXL345_TO_READ, _buff); //read the acceleration data from the ADXL345
+
+  // each axis reading comes in 16 bit resolution, ie 2 bytes. Least Significat Byte first!!
+  // thus we are converting both bytes in to one int
+
+  angle = Matrix(1, 3);
   
+  //convert voltage readings to G's
+  double fX, fY, fZ;
+  fX = (((int)_buff[1]) << 8) | _buff[0] * 0.00390625;
+  fY = (((int)_buff[3]) << 8) | _buff[2] * 0.00390625;
+  fZ = (((int)_buff[5]) << 8) | _buff[4] * 0.00390625;
+  
+  data_lin_acceleration(0) = fX;
+  data_lin_acceleration(1) = fY;
+  data_lin_acceleration(2) = fZ;
+  
+  data_ang_position(0) = (atan2(fX, sqrt(fY*fY+fZ*fZ))*180) / PI; //pitch
+  data_ang_position(1) = (atan2(fY, sqrt(fX*fX+fZ*fZ))*180) / PI; //roll
+  data_ang_position(2) = (atan2(fZ, sqrt(fX*fX+fY*fY))*180) / PI; //yaw
 }
+
 
 void ADXL345::init(char x_offset, char y_offset, char z_offset)
 {
@@ -19,13 +40,42 @@ void ADXL345::init(char x_offset, char y_offset, char z_offset)
   writeTo(ADXL345_OFFZ, z_offset);
 }
 
+// IO
+void ADXL345::writeTo(byte address, byte val)
+{
+  Wire.beginTransmission(ADXL345_DEVICE); // start transmission to device
+  Wire.write(address); // send register address
+  Wire.write(val); // send value to write
+  Wire.endTransmission(); // end transmission
+}
+
+void ADXL345::readFrom(byte address, int num, byte _buff[])
+{
+  Wire.beginTransmission(ADXL345_DEVICE); // start transmission to device
+  Wire.write(address); // sends address to read from
+  Wire.endTransmission(); // end transmission
+
+  Wire.beginTransmission(ADXL345_DEVICE); // start transmission to device
+  Wire.requestFrom(ADXL345_DEVICE, num); // request 6 bytes from device Registers: DATAX0, DATAX1, DATAY0, DATAY1, DATAZ0, DATAZ1
+
+  int i = 0;
+  while(Wire.available()) // device may send less than requested (abnormal)
+    {
+      _buff[i] = Wire.read(); // receive a byte
+      i++;
+    }
+
+  Wire.endTransmission(); // end trasmission
+}
+  
+// Calibration  
 void ADXL345::setSoftwareOffset(double x, double y, double z)
 {
   _xoffset = x;
   _yoffset = y;
   _zoffset = z;
 }
-
+  
 void ADXL345::printCalibrationValues(int samples)
 {
   //double x,y,z;
@@ -61,52 +111,7 @@ void ADXL345::printCalibrationValues(int samples)
   delay(2000);
 }
 
-
-// Writes val to address register on device
-void ADXL345::writeTo(byte address, byte val)
-{
-  Wire.beginTransmission(ADXL345_DEVICE); // start transmission to device
-  Wire.write(address); // send register address
-  Wire.write(val); // send value to write
-  Wire.endTransmission(); // end transmission
-}
-
-Matrix ADXL345::Update()
-{
-  readFrom(ADXL345_DATAX0, ADXL345_TO_READ, _buff); //read the acceleration data from the ADXL345
-
-  // each axis reading comes in 16 bit resolution, ie 2 bytes. Least Significat Byte first!!
-  // thus we are converting both bytes in to one int
-  // arr is form {x, y, z} with w = 1 and h = 3 (vector)
-  //double arrRaw[3] = {(((int)_buff[1]) << 8) | _buff[0],(((int)_buff[3]) << 8) | _buff[2], (((int)_buff[5]) << 8) | _buff[4]};
-
-  Matrix raw = Matrix(1, 3);
-  raw(0) = (((int)_buff[1]) << 8) | _buff[0];
-  raw(1) = (((int)_buff[3]) << 8) | _buff[2];
-  raw(2) = (((int)_buff[5]) << 8) | _buff[4];
-  return raw;
-}
-
-// Reads num bytes starting from address register on device in to _buff array
-void ADXL345::readFrom(byte address, int num, byte _buff[])
-{
-  Wire.beginTransmission(ADXL345_DEVICE); // start transmission to device
-  Wire.write(address); // sends address to read from
-  Wire.endTransmission(); // end transmission
-
-  Wire.beginTransmission(ADXL345_DEVICE); // start transmission to device
-  Wire.requestFrom(ADXL345_DEVICE, num); // request 6 bytes from device Registers: DATAX0, DATAX1, DATAY0, DATAY1, DATAZ0, DATAZ1
-
-  int i = 0;
-  while(Wire.available()) // device may send less than requested (abnormal)
-    {
-      _buff[i] = Wire.read(); // receive a byte
-      i++;
-    }
-
-  Wire.endTransmission(); // end trasmission
-}
-  
+// DEBUG  
 void ADXL345::printAllRegister()
 {
   byte _b;

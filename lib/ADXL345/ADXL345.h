@@ -1,11 +1,9 @@
 #ifndef ADXL345_h
 #define ADXL345_h
 
-
 #include <Wire.h>
 #include "Arduino.h"
 #include "Sensor.h"
-
 
 #define ADXL345_DEVICE 0x53    //device address
 #define ADXL345_TO_READ 6
@@ -24,21 +22,32 @@
 
 class ADXL345 : public Sensor
 {
- public:
-  ADXL345();
-  void init(char xoff=0, char yoff=0, char zoff=0);
-  void writeTo(byte address, byte val);
-  Matrix Update();
-  Matrix readNormalize(float gravityFactor = ADXL345_GRAVITY_EARTH);
-  void printAllRegister();
-  void print_byte(byte val);
-  void printCalibrationValues(int samples);
-  void readFrom(byte address, int num, byte _buff[]);
-  void setSoftwareOffset(double x, double y, double z);
-
- private:
-  byte _buff[6];
-  double _xoffset, _yoffset, _zoffset;
+  public:
+    ADXL345();
+    
+    void Update();
+    
+    void init(char xoff=0, char yoff=0, char zoff=0);
+    
+    // IO
+    void writeTo(byte address, byte val);
+    void readFrom(byte address, int num, byte _buff[]);
+    
+    // Calibration
+    void printCalibrationValues(int samples);
+    void setSoftwareOffset(double x, double y, double z);
+    
+    // DEBUG
+    void printAllRegister();
+    void print_byte(byte val);
+    
+  private:
+    byte _buff[6];
+    double _xoffset, _yoffset, _zoffset;
+    
+    Matrix data_ang_position(1,3);
+    Matrix data_lin_acceleration(1, 3);
+  
 
 };
 

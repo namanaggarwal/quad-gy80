@@ -6,8 +6,10 @@
 
 class Sensor {
   public:
-    virtual Matrix Update();
+    virtual void Update();
 
+    virtual void init();
+    
 };
 
 #endif
