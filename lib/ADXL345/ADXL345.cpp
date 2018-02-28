@@ -28,6 +28,15 @@ void ADXL345::Update()
   data_ang_position(2) = (atan2(fZ, sqrt(fX*fX+fY*fY))*180) / PI; //yaw
 }
 
+Matrix getAngularPosition()
+{
+  return data_ang_position;
+}
+
+Matrix getLinearAcceleration()
+{
+  return data_lin_acceleration;
+}
 
 void ADXL345::init(char x_offset, char y_offset, char z_offset)
 {

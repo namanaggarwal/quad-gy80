@@ -19,7 +19,7 @@ class Kalman
     unsigned long int dt;
     unsigned long int pt = 0;
     Matrix data = Matrix(1,3); // return data
-    Matrix Xp = Matrix(1,6);   // Current State
+    Matrix Xkp = Matrix(1,6);   // Current State
     Matrix PCM = Matrix(6,6);  // Process Covariance Matrix
     Matrix Pkp = Matrix(6,6);
     Matrix KG = Matrix(6,6);

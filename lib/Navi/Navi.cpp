@@ -1,31 +1,38 @@
 #include "Navi.h"
 
-Navi::Navi(ADXL345* accelerometer, L3G4200D* gyroscope, HMC5883L* magnetometer)
+Navi::Navi(ADXL345* accelerometer, L3G4200D* gyroscope)//, HMC5883L* magnetometer)
 {
-  //Tell Navi what sensors to use
+  // Bind sensors to Navi
   accel = accelerometer;
   gyro = gyroscope;
-  compass = magnetometer;
-  //altimeter and kalman filter go here
+  //compass = magnetometer;
+  
+  // Bind sensors to kalman
+  Kalman myKalman(accel, gyro);
+  //Kalman myKalman2(accel, GPS);
+  
 }
 
 bool Navi::init() {
   Serial.println("Navi initializing...");
   accel->init(0,0,0);
   gyro->init(0,0,0);
-  compass->init();
+  //compass->init();
 
   return true;
 }
 
 void Navi::UpdateState() {
-  // logic for updating state here
-  //
-  // get next state based on previous state
-  Serial.println("Updating State");
-  a = accel->Update();
-  g = gyro->Update();
-  c = compass->Update();
+  // Compute Time Delta
+  
+  // Get our actual state
+  // Call Kalman PredictNextState
+  myKalman.PredictNextState(dt);
+  //myKalman2.PredictNextState(dt);
+  // Get our new state
+  angle = myKalman.getState();
+  //linear = myKalman2.getState();
+  
 }
 
 void Navi::printSensorInfo() {

@@ -27,7 +27,7 @@ class ADXL345 : public Sensor
     
     void Update();
     Matrix getAngularPosition();
-    Matrix getAngularVelocity();
+    Matrix getLinearAcceleration();
     
     void init(char xoff=0, char yoff=0, char zoff=0);
     

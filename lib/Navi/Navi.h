@@ -22,12 +22,10 @@ class Navi
   HMC5883L* compass;
   //BMP085 alti;
   //Kalman Kalman
-
+  
   float state[7];
-
-  Matrix a = Matrix(1,3);
-  Matrix g = Matrix(1,3);
-  Matrix c = Matrix(1,3);
+  Matrix angle(1,3);
+  //Matrix linear(1,3);
 };
 
 #endif

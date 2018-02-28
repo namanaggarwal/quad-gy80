@@ -31,8 +31,8 @@ class L3G4200D : public Sensor
   L3G4200D();
   
   void Update();
-  Matrix getVelocity();
-  Matrix getAcceleration();
+  Matrix getAngularVelocity();
+  Matrix getAngularAcceleration();
   
   void init(double xoffset=0, double yoffset=0, double zoffset=0);
   
