@@ -11,6 +11,10 @@ GPATH
 GRTAGS
 GTAGS
 .piolibdeps
-.vscode/*.db
-.vscode/c_cpp_properties.json
-.vscode/launch.json
+
+#VS Code nonsense
+.vscode/*
+
+pi_info
+platformio.ini
+.pioenvs/*
