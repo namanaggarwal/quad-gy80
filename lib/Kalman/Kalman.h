@@ -24,8 +24,8 @@ class Kalman
 
     void getdt();
 
-    unsigned long int dt = 0;
-    unsigned long int pt = 0;
+    float dt = 0.0;
+    float pt = 0.0;
     
     L3G4200D* gyro;
     ADXL345* accel;

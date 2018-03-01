@@ -52,20 +52,20 @@ void Kalman::calcStateMatrix() {
     // Note: in this step, we mathematically determine where our device has moved
     // based on the data we had previously
     getdt();
-    double A_arr[36] = {1, 0, 0, (dt/(1000000)), 0, 0,
-                        0, 1, 0, 0, (dt/(1000000)), 0,
-                        0, 0, 1, 0, 0, (dt/(1000000)),
+    double A_arr[36] = {1, 0, 0, dt, 0, 0,
+                        0, 1, 0, 0, dt, 0,
+                        0, 0, 1, 0, 0, dt,
                         0, 0, 0, 1, 0, 0,
                         0, 0, 0, 0, 1, 0,
                         0, 0, 0, 0, 0, 1};
     A = Matrix(6,6, A_arr);
 
-    double B_arr[18] = {.5*(dt/1000000)*(dt/1000000), 0, 0,
-                        0, .5*(dt/1000000)*(dt/1000000), 0,
-                        0,  0, .5*(dt/1000000)*(dt/1000000),
-                        (dt/1000000), 0, 0,
-                        0,  (dt/1000000), 0, 
-                        0,  0, (dt/1000000)};
+    double B_arr[18] = {.5*dt*dt, 0, 0,
+                        0, .5*dt*dt, 0,
+                        0,  0, .5*dt*dt,
+                        dt, 0, 0,
+                        0,  dt, 0, 
+                        0,  0, dt};
 
     Matrix B = Matrix(3, 6, B_arr);
     
@@ -122,8 +122,8 @@ Matrix Kalman::getState() {
 void Kalman::getdt() {
   // process our change in time
   unsigned long int ct = micros();
-  dt = ct - pt;
-  pt = ct;
+  dt = (ct - pt)/1000000;
+  pt = ct/1000000;
   
 }
 
