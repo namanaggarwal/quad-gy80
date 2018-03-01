@@ -10,20 +10,43 @@
 class Kalman
 {
   public:
-    Kalman(Sensor* sensor1, Sensor* sensor2);
-    void PredictState(float dt);
+    Kalman(L3G4200D* gyroscope, ADXL345* accelerometer);
+    void PredictState();
     Matrix getState();
     
   private:
     void Kalman::calcStateMatrix();
-    unsigned long int dt;
+    void Kalman::calcProcessControlMatrix();
+    void Kalman::calcKalmanGain();
+    void Kalman::calcNewMeasurement();
+    void Kalman::calcCurrentState();
+    void Kalman::calcNewProcessControlMatrix();
+
+    void getdt();
+    void create_Xk_matrix();
+    
+    unsigned long int dt = 0;
     unsigned long int pt = 0;
-    Matrix data = Matrix(1,3); // return data
-    Matrix Xkp = Matrix(1,6);   // Current State
-    Matrix PCM = Matrix(6,6);  // Process Covariance Matrix
-    Matrix Pkp = Matrix(6,6);
-    Matrix KG = Matrix(6,6);
-    Matrix Yk = Matrix(6,1);
+    
+    L3G4200D* gyro;
+    ADXL345* accel;
+
+    Matrix Xk = Matrix(1,6);  // Current State
+    Matrix Pk = Matrix(6,6);  // Process Covariance Matrix
+    Matrix K = Matrix(6,6);   // Kalman Gain
+    Matrix Yk = Matrix(6,1);  // Observed State
+    
+    // User provided
+    Matrix A = Matrix(6, 6);  // State Transition Model
+    //Matrix B = Matrix(3,6);   // Control-Input Model
+    //Matrix C = Matrix(6,6);   
+    Matrix H = Matrix(6,6);
+    
+
+    // Noise covariance Matrices - User Tuned
+    //Matrix Q = Matrix(6,6);   // Covariance of process noise
+    //Matrix R = Matrix (6,6);   // Covariance of the observation noise
+
     
 };
 
