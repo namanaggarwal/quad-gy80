@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include "Arduino.h"
 #include "Sensor.h"
+#include "matrix.h"
 
 
 #define HMC5883L_DEVICE 0x1E      //device address
@@ -73,11 +74,26 @@ class HMC5883L : public Sensor
 {
  public:
   HMC5883L();
+  
+  void Update();
+  Matrix getHeading();
+  
   bool init();
 
+  // IO
+  void writeTo(byte address, byte val);
+  void readFrom(byte address, int num, byte _buff[]);
+  
+  // Calibration
+  void printCalibrationValues(int samples);
+  void setOffset(int xoffset, int yoffset);
   void calibrate();
   
-
+  // DEBUG
+  void printAllRegister();
+  void print_byte(byte val);
+  
+  // Getters & Setters
   void setRange(hmc5883l_range_t range);
   void setMeasurementMode(hmc5883l_mode_t mode);
   void setDataRate(hmc5883l_dataRate_t dataRate);
@@ -88,23 +104,13 @@ class HMC5883L : public Sensor
   hmc5883l_dataRate_t getDataRate();
   hmc5883l_samples_t getSamples();
 
-  void setOffset(int xoffset, int yoffset);
   
-  Matrix Update();
-  
-  void printAllRegister();
-  void print_byte(byte val);
-  void printCalibrationValues(int samples);
-  void writeTo(byte address, byte val);
-  void readFrom(byte address, int num, byte _buff[]);
  private:
-  // this is an array with 6 bytes (3 ints!!)
-  // this allows us to store the information from compass readings
-  // since each reading comes in as 2 bytes
   byte _buff[6];
   float mgPerDigit;
   double x_offset, y_offset;
-
+  
+  Matrix data_heading(1,3);
   
 };
 

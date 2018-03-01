@@ -1,6 +1,5 @@
-#include "Arduino.h"
 #include "ADXL345.h"
-#include <math.h>
+
 
 ADXL345::ADXL345() {}
 
