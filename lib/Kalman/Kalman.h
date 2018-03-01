@@ -23,8 +23,7 @@ class Kalman
     void Kalman::calcNewProcessControlMatrix();
 
     void getdt();
-    void create_Xk_matrix();
-    
+
     unsigned long int dt = 0;
     unsigned long int pt = 0;
     
@@ -39,7 +38,7 @@ class Kalman
     // User provided
     Matrix A = Matrix(6, 6);  // State Transition Model
     //Matrix B = Matrix(3,6);   // Control-Input Model
-    //Matrix C = Matrix(6,6);   
+    //Matrix C = Matrix(6,6);   // duplicate of H
     Matrix H = Matrix(6,6);
     
 
