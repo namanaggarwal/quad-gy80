@@ -8,8 +8,6 @@
 class Sensor {
   public:
     virtual void Update();
-
-    virtual void init();
     
 };
 

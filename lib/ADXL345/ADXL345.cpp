@@ -10,14 +10,12 @@ void ADXL345::Update()
 
   // each axis reading comes in 16 bit resolution, ie 2 bytes. Least Significat Byte first!!
   // thus we are converting both bytes in to one int
-
-  angle = Matrix(1, 3);
   
   //convert voltage readings to G's
   double fX, fY, fZ;
-  fX = (((int)_buff[1]) << 8) | _buff[0] * 0.00390625;
-  fY = (((int)_buff[3]) << 8) | _buff[2] * 0.00390625;
-  fZ = (((int)_buff[5]) << 8) | _buff[4] * 0.00390625;
+  fX = ((((int)_buff[1]) << 8) | _buff[0]) * 0.00390625;
+  fY = ((((int)_buff[3]) << 8) | _buff[2]) * 0.00390625;
+  fZ = ((((int)_buff[5]) << 8) | _buff[4]) * 0.00390625;
   
   data_lin_acceleration(0) = fX;
   data_lin_acceleration(1) = fY;
@@ -28,18 +26,19 @@ void ADXL345::Update()
   data_ang_position(2) = (atan2(fZ, sqrt(fX*fX+fY*fY))*180) / PI; //yaw
 }
 
-Matrix getAngularPosition()
+Matrix ADXL345::getAngularPosition()
 {
   return data_ang_position;
 }
 
-Matrix getLinearAcceleration()
+Matrix ADXL345::getLinearAcceleration()
 {
   return data_lin_acceleration;
 }
 
-void ADXL345::init(char x_offset, char y_offset, char z_offset)
+bool ADXL345::init(char x_offset, char y_offset, char z_offset)
 {
+  Wire.begin();
   writeTo(ADXL345_POWER_CTRL, 8);
 
   writeTo(ADXL345_DATA_FORMAT, 0x0B);
@@ -47,6 +46,8 @@ void ADXL345::init(char x_offset, char y_offset, char z_offset)
   writeTo(ADXL345_OFFX, x_offset);
   writeTo(ADXL345_OFFY, y_offset);
   writeTo(ADXL345_OFFZ, z_offset);
+
+  return true;
 }
 
 // IO

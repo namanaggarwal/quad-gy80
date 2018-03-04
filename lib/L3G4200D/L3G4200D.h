@@ -5,7 +5,6 @@
 #include "Arduino.h"
 #include "Sensor.h"
 
-
 #define L3G4200D_DEVICE 105
 #define L3G4200D_BYTES_READ 6
 
@@ -33,8 +32,10 @@ class L3G4200D : public Sensor
   void Update();
   Matrix getAngularVelocity();
   Matrix getAngularAcceleration();
+  Matrix getAngularPosition();
+  Matrix getKalmanInput();
   
-  void init(double xoffset=0, double yoffset=0, double zoffset=0);
+  bool init(double xoffset=0, double yoffset=0, double zoffset=0);
   
   // IO
   void writeTo(byte address, byte val);
@@ -54,14 +55,15 @@ class L3G4200D : public Sensor
   double yg;
   double zg;
   
-  unsigned long int last_recorded_time = 0;
+  unsigned long int last_recorded_time;
 
   double _xoffset;
   double _yoffset;
   double _zoffset;
   
-  Matrix data_ang_velocity(1,3);
-  Matrix data_ang_acceleration(1,3);
+  Matrix data_ang_position = Matrix(3,1);
+  Matrix data_ang_velocity = Matrix(3,1);
+  Matrix data_ang_acceleration = Matrix(3,1);
 
 };
 

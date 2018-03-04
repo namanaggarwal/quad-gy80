@@ -1,30 +1,31 @@
 #ifndef NAVI_h
 #define NAVI_h
 
+#include "matrix.h"
 #include "ADXL345.h"
 #include "L3G4200D.h"
-#include "HMC5883L.h"
-#include "matrix.h"
 #include "Kalman.h"
 
 
 class Navi
 {
  public:
-  Navi(ADXL345* accelerometer, L3G4200D* gyroscope, HMC5883L* magnetometer);
+  Navi();
   bool init();
-  void UpdateState();
+  bool UpdateState();
+  Matrix getState();
+  Kalman getKalman();
   void printSensorInfo();
   
  private:
-  ADXL345* accel;
-  L3G4200D* gyro;
-  HMC5883L* compass;
+  ADXL345 accel;
+  L3G4200D gyro;
+  Kalman myKalman;
+  //mmHMC5883L* compass;
   //BMP085 alti;
-  //Kalman Kalman
   
   float state[7];
-  Matrix angle(1,3);
+  Matrix angle = Matrix(3,1);
   //Matrix linear(1,3);
 };
 

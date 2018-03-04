@@ -37,7 +37,7 @@ Matrix& Matrix::operator=( const Matrix& other ) {
 }
 
 void Matrix::printMatrix() {
-  Serial.print("| ");
+  Serial.print("\n| ");
   double curr_val;
   for(int i = 0; i < (width*height); i++) {
     curr_val = roundf(data[i]*100)/100.0;
@@ -65,6 +65,7 @@ double& Matrix::operator()(const int nRow, const int nCol)
   //else {
   //  throw std::runtime_error("Out of range");
   //}
+  return data[((nRow-1)*width+(nCol-1))];
 }
 
 double& Matrix::operator()(const int Index)
@@ -114,6 +115,9 @@ Matrix& Matrix::operator-( const Matrix& other ) {
 Matrix Matrix::multiply(Matrix right) {
   //check that matrices have appropriate dimensions
   assert(width==right.height);
+  if(width != right.height) {
+    Serial.print("DOH!");
+  }
   
   // create temporary array to load into result Matrix
   double data_temp[width*right.height];
@@ -258,13 +262,38 @@ Matrix Matrix::concatenate(const Matrix right, int axis) {
   
   int new_height = height;
   int new_width = width;
+  //int right_size = (right.width * right.height);
   
   if(axis == 0){
-    assert(width == right.width);
-    memcpy(this->data, this->data+(width*height), data_temp);
-    memcpy(right.data, right.data+(right.width*right.height), data_temp+(width*height));
+    //widths must be equal!!
     new_height = height + right.height;
+    //direct array concatenation
+    bool swap = 0;
+    for(int i = 0; i < this->height + right.height; i++) {
+      if(swap == 0) {
+        data_temp[i] = this->data[i];
+      }
+      else if(swap == 1) {
+        data_temp[i] = right.data[i%height];
+      }
+      if(i == height-1) {
+        swap = 1;
+      }
+    }
+
+    //floats are 4 bytes, size of data is 4 * # of elements in data
+    // memcpy(data_temp, this->data, sizeof(this->data));
+    // memcpy(data_temp+(right_size*sizeof(float)), right.data, right_size*sizeof(float));
+    
+    // for(int i = 0; i < new_height; i++){
+    //   Serial.print(data_temp[i]);
+    // }
+
+    // Serial.println(sizeof(this->data));
+    // Serial.println(sizeof(right.data));
   }
+
+ 
   if(axis == 1) {
     int curr_row = 0;
     int temp = 0;

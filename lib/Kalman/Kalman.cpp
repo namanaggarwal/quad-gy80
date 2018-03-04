@@ -11,20 +11,15 @@
 #include "Kalman.h"
 #include "ADXL345.h"
 #include "L3G4200D.h"
+Kalman::Kalman() {
+  //Arduino why
+}
 
-
-Kalman::Kalman(L3G4200D* gyroscope, ADXL345* accelerometer) {
-    // Step 0: Bind our sensors, Create Xk and Pk
-    gyro = gyroscope;
-    accel = accelerometer;
-
-    gyro->Update();
-    accel->Update();
-    
-    Xk = gyro->getAngularVelocity().concatenate(accel->getAngularPosition(), 0); // we should have a 1x6 matrix here
+bool Kalman::init(ADXL345* accelerometer, L3G4200D* gyroscope) {
+    gyro->Update(); 
+    Xk = gyro->getKalmanInput(); // we should have a 1x6 matrix here
     //Pk is initialized correctly already: https://en.wikipedia.org/wiki/Kalman_filter#Example_application,_technical
 
-  
     // Initialize our observation model/Identity matrix
     double H_arr[36] = {1, 0, 0, 0, 0, 0,
                        0, 1, 0, 0, 0, 0,
@@ -33,15 +28,21 @@ Kalman::Kalman(L3G4200D* gyroscope, ADXL345* accelerometer) {
                        0, 0, 0, 0, 1, 0,
                        0, 0, 0, 0, 0, 1};
     H = Matrix(6,6, H_arr);    
+    return true;
 }
 
-void Kalman::PredictState() {
+bool Kalman::PredictState() {
+    Serial.print("Step 1: Calculating State Matrix");
     calcStateMatrix();
-    calcProcessControlMatrix();
-    calcKalmanGain();  
-    calcNewMeasurement();
-    calcCurrentState();
-    calcNewProcessControlMatrix();
+    return true;
+
+    // calcProcessControlMatrix();
+    // calcKalmanGain();  
+    // calcNewMeasurement();
+    // calcCurrentState();
+    // calcNewProcessControlMatrix();
+
+    
 }
 
 void Kalman::calcStateMatrix() {
@@ -52,12 +53,12 @@ void Kalman::calcStateMatrix() {
     // Note: in this step, we mathematically determine where our device has moved
     // based on the data we had previously
     getdt();
-    double A_arr[36] = {1, 0, 0, dt, 0, 0,
-                        0, 1, 0, 0, dt, 0,
-                        0, 0, 1, 0, 0, dt,
-                        0, 0, 0, 1, 0, 0,
-                        0, 0, 0, 0, 1, 0,
-                        0, 0, 0, 0, 0, 1};
+    double A_arr[36] = {1, 0, 0, 0, 0, 0,
+                        0, 1, 0, 0, 0, 0,
+                        0, 0, 1, 0, 0, 0,
+                        dt, 0, 0, 1, 0, 0,
+                        0, dt, 0, 0, 1, 0,
+                        0, 0, dt, 0, 0, 1};
     A = Matrix(6,6, A_arr);
 
     double B_arr[18] = {.5*dt*dt, 0, 0,
@@ -67,7 +68,7 @@ void Kalman::calcStateMatrix() {
                         0,  dt, 0, 
                         0,  0, dt};
 
-    Matrix B = Matrix(3, 6, B_arr);
+    Matrix B = Matrix(6, 3, B_arr);
     
     // poll our gyro for the new angular acceleration values
     Matrix u = gyro->getAngularAcceleration();

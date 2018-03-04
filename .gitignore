@@ -1,20 +1,5 @@
-#silly emacs backups
-*"."*"~"
-
-#platformio files
-.travis.yml
 .pioenvs
-.build_ano
-
-#gtags information
-GPATH
-GRTAGS
-GTAGS
 .piolibdeps
-
-#VS Code nonsense
-.vscode/*
-
-pi_info
-platformio.ini
-.pioenvs/*
+.vscode/*.db
+.vscode/c_cpp_properties.json
+.vscode/launch.json
