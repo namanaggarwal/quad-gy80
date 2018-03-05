@@ -167,34 +167,34 @@ void loop() {
 
 
 
-    Serial.print("Kalman Filter:\tPitch: ");
+    Serial.print("Kalman:\tPitch: ");
     Serial.print(Xk(0));
     Serial.print("\tRoll: ");
     Serial.print(Xk(1));
     Serial.print("\tYaw: ");
     Serial.print(Xk(2));
 
-    Serial.print("\tCompli Filter:\tPitch: ");
+    Serial.print("\tCompli:\tPitch: ");
     Serial.print(comp_angles(0));
     Serial.print("\tRoll: ");
     Serial.print(comp_angles(1));
     Serial.print("\tYaw: ");
     Serial.print(comp_angles(2));
 
-    Serial.print("\tGyro Reading:\tPitch: ");
+    Serial.print("\tGyro:\tPitch: ");
     Serial.print(gyro.getAngularPosition()(0));
     Serial.print("\tRoll: ");
     Serial.print(gyro.getAngularPosition()(1));
     Serial.print("\tYaw: ");
     Serial.print(gyro.getAngularPosition()(2));
 
-    Serial.print("\tAccel Reading:\tPitch: ");
+    Serial.print("\tAccel:\tPitch: ");
     Serial.print(accel.getAngularPosition()(0));   
     Serial.print("\tRoll: ");
     Serial.print(accel.getAngularPosition()(1)); 
     Serial.print("\tYaw: ");
     Serial.println(accel.getAngularPosition()(2));
-
+    delay(200);
 
 
 
