@@ -1,32 +1,15 @@
 #include <Arduino.h>
 
-#include "Navi.h"
 #include "L3G4200D.h"
 #include "ADXL345.h"
+#include "HMC5883L.h"
 #include "Kalman.h"
 #include "matrix.h"
 
-// Navi myNavi;
-// Matrix myAngle;
-
-// void setup() {
-//     Serial.begin(9600);
-//     Serial.println("Starting");
-//     myNavi.init();
-//     delay(500);
-// }
-
-// void loop() { 
-//     Serial.println("Updating State...");
-//     myNavi.UpdateState();
-//     // myAngle = myNavi.getState();
-//     // Serial.println("HEY!: Your current angle:");
-//     // myAngle.printMatrix();
-//     while(1) {}
-// }
 
 ADXL345 accel;
 L3G4200D gyro;
+HMC5883L compass;
 
 Matrix Xk = Matrix(6,1);  // Current State
 Matrix Pk = Matrix(6,6);  // Process Covariance Matrix
@@ -43,16 +26,21 @@ Matrix H = Matrix(6,6);
 Matrix Q = Matrix(6,6);   // Covariance of process noise
 Matrix R = Matrix (6,6);   // Covariance of the observation noise
 
-float dt = 0;
-float pt = 0;
+// Matrices for complimentary filter
+Matrix comp_angles = Matrix(3,1);
+double CFA_arr[9] = {.98f, 0, 0,
+                    0, .98f, 0,
+                    0, 0, .98f};
+Matrix CFA = Matrix(3,3, CFA_arr);
+double CFB_arr[9] = {.02f, 0, 0,
+                    0, .02f, 0,
+                    0, 0, .02f};
+Matrix CFB = Matrix(3,3, CFB_arr);
+
+
+unsigned long pt = 0;
 int iter = 0;
-void getdt() {
-  // process our change in time
-  unsigned long int ct = micros();
-  dt = (ct - pt)/1000000;
-  pt = ct/1000000;
-  
-}
+
 
 void setup() {
     Serial.begin(9600);
@@ -100,69 +88,121 @@ void setup() {
 }
 
 void loop() {
-    Serial.println("GO");
+    //Serial.println("---------------------------------------");
     
-    getdt();
-    double A_arr[36] = {1, 0, 0, 0, 0, 0,
-                        0, 1, 0, 0, 0, 0,
-                        0, 0, 1, 0, 0, 0,
-                        dt, 0, 0, 1, 0, 0,
-                        0, dt, 0, 0, 1, 0,
-                        0, 0, dt, 0, 0, 1};
-    A = Matrix(6,6, A_arr);
-    // Step 1. Calculate State Matrix
-    Xk = A.multiply(Xk); //need to add B in
-    //Xk.printMatrix();
+    unsigned long ct = micros();
+    float dt = (ct - pt);
+    dt = dt/1000000;
+    //Serial.println(dt,4);
+    pt = ct;
+
+    // double A_arr[36] = {1, 0, 0, 0, 0, 0,
+    //                     0, 1, 0, 0, 0, 0,
+    //                     0, 0, 1, 0, 0, 0,
+    //                     dt, 0, 0, 1, 0, 0,
+    //                     0, dt, 0, 0, 1, 0,
+    //                     0, 0, dt, 0, 0, 1};
+    // A = Matrix(6, 6, A_arr);
+
+    // double B_arr[18] = {dt, 0, 0,
+    //                     0, dt, 0,
+    //                     0, 0, dt,
+    //                     .5*dt*dt, 0, 0,
+    //                     0, .5*dt*dt, 0, 
+    //                     0, 0, .5*dt*dt };
+    // Matrix B = Matrix(6, 3, B_arr);
+    // // Step 1. Calculate the Predicted State Matrix 
+    // Xk = A.multiply(Xk).add(B.multiply(gyro.getAngularAcceleration())); //need to add B in
+    // //Xk.printMatrix();
 
 
-    // Step 2. Calculate Process Control Matrix
-    Pk = A.multiply(Pk).multiply(A.transpose()).add(Q);
-    //Pk.printMatrix();
+    // // Step 2. Calculate the Predicted Process Control Matrix
+    // Pk = A.multiply(Pk).multiply(A.transpose()).add(Q);
+    // //Pk.printMatrix();
 
-    // // Step 3. Calculate the Kalman Gain
-    K = Pk.multiply(H.transpose()).divide(
-        H.multiply(Pk).multiply(H.transpose()).add(R));
+    // // // Step 3. Calculate the Kalman Gain
+    // K = Pk.multiply(H.transpose()).divide(
+    //     H.multiply(Pk).multiply(H.transpose()).add(R));
     
-    //K.printMatrix();
+    // //K.printMatrix();
 
-    // // Step 4. Update the Observed State
+    // // // Step 4. Update the Observed State
     accel.Update();
     gyro.Update();
-    Matrix observed = Matrix(6,1);
-    observed(0) = gyro.getAngularVelocity()(0);
-    observed(1) = gyro.getAngularVelocity()(1);
-    observed(2) = gyro.getAngularVelocity()(2);
-    observed(3) = accel.getAngularPosition()(0);
-    observed(4) = accel.getAngularPosition()(1);
-    observed(5) = accel.getAngularPosition()(2);
+    // Matrix observed = Matrix(6,1);
+    // observed(0) = gyro.getAngularVelocity()(0);
+    // observed(1) = gyro.getAngularVelocity()(1);
+    // observed(2) = gyro.getAngularVelocity()(2);
+    // observed(3) = accel.getAngularPosition()(0);
+    // observed(4) = accel.getAngularPosition()(1);
+    // observed(5) = accel.getAngularPosition()(2);
 
-    // H.printMatrix();
-    // observed.printMatrix();
-    Yk = H.multiply(observed);
+    // // H.printMatrix();
+    // // observed.printMatrix();
+    // Yk = H.multiply(observed);
 
-    //Yk.printMatrix();
-    // // Step 5. Calculate the Current State:
-    Xk = Xk.add(K.multiply(Yk.subtract(H.multiply(Xk))));
-    //Xk.printMatrix();
-
+    // //Yk.printMatrix();
+    // // // Step 5. Calculate the Current State:
+    // Xk = Xk.add(K.multiply(Yk.subtract(H.multiply(Xk))));
+    // //Xk.printMatrix();
 
     // // Step 6. Calculate the new Process Control Matrix
-    Pk = H.subtract(K.multiply(H)).multiply(Pk);
-    //Pk = Pk.subtract(K.multiply)
-    //Pk.printMatrix();
+    // Pk = H.subtract(K.multiply(H)).multiply(Pk);
+    // //Pk = Pk.subtract(K.multiply)
+    // //Pk.printMatrix();
 
-    Serial.print("Pitch:\t");
-    Serial.println(Xk(3));
-    Serial.print("Roll:\t");
-    Serial.println(Xk(4));
-    Serial.print("Yaw\t");
-    Serial.println(Xk(5));
-    delay(400);
+    // Complimentary Filter Comparison:
+    double comp_dt_arr[9] = {dt, 0.0f, 0.0f,
+                            0.0f, dt, 0.0f,
+                            0.0f, 0.0f, dt};
+    Matrix comp_dt = Matrix(3,3, comp_dt_arr);
+    //Serial.print("Calculating Comp Filter");
+    //gyro.getAngularVelocity().printMatrix();
+    // Matrix dps = comp_dt.multiply(gyro.getAngularVelocity());
+
+    // Matrix gps_angles = CFA.multiply(comp_angles.add(dps));//.add(CFB.multiply(accel.getAngularPosition()));
+    // comp_angles = gps_angles.add(CFB.multiply(accel.getAngularPosition()));
+
+    comp_angles = CFA.multiply(comp_angles.add(comp_dt.multiply(gyro.getAngularVelocity()))).add(CFB.multiply(accel.getAngularPosition()));
 
 
-    if(iter == 5){
-        while(1){}
-    }
-    iter++;
+
+    Serial.print("Kalman Filter:\tPitch: ");
+    Serial.print(Xk(0));
+    Serial.print("\tRoll: ");
+    Serial.print(Xk(1));
+    Serial.print("\tYaw: ");
+    Serial.print(Xk(2));
+
+    Serial.print("\tCompli Filter:\tPitch: ");
+    Serial.print(comp_angles(0));
+    Serial.print("\tRoll: ");
+    Serial.print(comp_angles(1));
+    Serial.print("\tYaw: ");
+    Serial.print(comp_angles(2));
+
+    Serial.print("\tGyro Reading:\tPitch: ");
+    Serial.print(gyro.getAngularPosition()(0));
+    Serial.print("\tRoll: ");
+    Serial.print(gyro.getAngularPosition()(1));
+    Serial.print("\tYaw: ");
+    Serial.print(gyro.getAngularPosition()(2));
+
+    Serial.print("\tAccel Reading:\tPitch: ");
+    Serial.print(accel.getAngularPosition()(0));   
+    Serial.print("\tRoll: ");
+    Serial.print(accel.getAngularPosition()(1)); 
+    Serial.print("\tYaw: ");
+    Serial.println(accel.getAngularPosition()(2));
+
+
+
+
+
+
+    // if(iter == 5){
+    //     while(1){}
+    // }
+    // iter++;
     
 }

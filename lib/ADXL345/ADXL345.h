@@ -2,6 +2,7 @@
 #define ADXL345_h
 
 #include <Wire.h>
+#include <math.h>
 #include "Arduino.h"
 #include "Sensor.h"
 
@@ -47,9 +48,14 @@ class ADXL345 : public Sensor
     byte _buff[6];
     double _xoffset, _yoffset, _zoffset;
     
+<<<<<<< HEAD
     Matrix data_ang_position = Matrix(3,1);
     Matrix data_lin_acceleration = Matrix(3, 1);
   
+=======
+    Matrix data_ang_position(1,3);
+    Matrix data_lin_acceleration(1, 3);
+>>>>>>> 93a9052cdf86a2662bc590ceea77a1ab90a687cd
 
 };
 

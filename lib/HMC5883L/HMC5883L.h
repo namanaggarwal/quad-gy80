@@ -69,11 +69,15 @@ typedef enum
   } hmc5883l_range_t;
 
 
-class HMC5883L : public Sensor
+class HMC5883L
 {
  public:
   HMC5883L();
   bool init();
+  void Update();
+
+  float getHeading();
+  Matrix getMag();
 
   void calibrate();
   
@@ -90,7 +94,7 @@ class HMC5883L : public Sensor
 
   void setOffset(int xoffset, int yoffset);
   
-  Matrix Update();
+  
   
   void printAllRegister();
   void print_byte(byte val);
@@ -98,13 +102,12 @@ class HMC5883L : public Sensor
   void writeTo(byte address, byte val);
   void readFrom(byte address, int num, byte _buff[]);
  private:
-  // this is an array with 6 bytes (3 ints!!)
-  // this allows us to store the information from compass readings
-  // since each reading comes in as 2 bytes
+
   byte _buff[6];
   float mgPerDigit;
   double x_offset, y_offset;
-
+  Matrix data_mag = Matrix(3,1);
+  float heading = 0;
   
 };
 

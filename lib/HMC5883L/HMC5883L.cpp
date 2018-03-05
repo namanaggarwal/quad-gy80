@@ -13,7 +13,6 @@ bool HMC5883L::init() {
 
   Wire.begin();
   
-  byte val;
   readFrom(HMC5883L_ID_REG_A,3, _buff);
   //  byte val;
   
@@ -22,16 +21,58 @@ bool HMC5883L::init() {
      _buff[2] != 0x33) {
     return false;
   }
-  
+  x_offset = 0;
+  y_offset = 0;
   
   setRange(HMC5883L_RANGE_1_3GA);
   setMeasurementMode(HMC5883L_CONTINUOUS);
-  setDataRate(HMC5883L_DATARATE_15HZ);
-  setSamples(HMC5883L_SAMPLES_1);
+  setDataRate(HMC5883L_DATARATE_30HZ);
+  setSamples(HMC5883L_SAMPLES_8);
 
   mgPerDigit = 0.92f;
   
   return true;
+}
+
+void HMC5883L::Update() {
+
+
+  readFrom(HMC5883L_OUT_X_MSB, HMC5883L_TO_READ, _buff);
+
+  
+
+  data_mag(0) = ((float)(((int)_buff[0]) << 8 | _buff[1]) - x_offset) * mgPerDigit;
+  data_mag(1) = ((float)(((int)_buff[4]) << 8 | _buff[5]) - y_offset) * mgPerDigit;
+  data_mag(2) = (float)(((int)_buff[2]) << 8 | _buff[3]) * mgPerDigit;
+
+  heading = atan2(data_mag(1), data_mag(0));
+
+  // Set declination angle on your location and fix heading
+  // You can find your declination on: http://magnetic-declination.com/
+  // (+) Positive or (-) for negative
+  // For Bytom / Poland declination angle is 4'26E (positive)
+  // Formula: (deg + (min / 60.0)) / (180 / M_PI);
+
+  float declination = ((65 + (56/60))/(180/PI));
+  heading += declination;
+
+  if (heading < 0) {
+    heading += 2 * PI;
+  }
+  if (heading > 2 * PI)
+  {
+    heading -= 2 * PI;
+  }
+
+  heading = heading*180/PI;
+}
+
+Matrix HMC5883L::getMag() {
+  return data_mag;
+}
+
+float HMC5883L::getHeading() {
+  return heading;
 }
 
 //still in dev
@@ -168,19 +209,7 @@ void HMC5883L::writeTo(byte address, byte val) {
   Wire.endTransmission();
 }
 
-Matrix HMC5883L::Update() {
 
-
-  readFrom(HMC5883L_OUT_X_MSB, HMC5883L_TO_READ, _buff);
-
-  Matrix raw = Matrix(1,3);
-
-  raw(0) = ((int)_buff[1]) << 8 | _buff[0];
-  raw(1) = ((int)_buff[3]) << 8 | _buff[2];
-  raw(2) = ((int)_buff[5]) << 8 | _buff[4];
-
-  return raw;
-}
 
 void HMC5883L::readFrom(byte address, int num, byte _buff[]) {
   Wire.beginTransmission(HMC5883L_DEVICE); // start transmission to device
