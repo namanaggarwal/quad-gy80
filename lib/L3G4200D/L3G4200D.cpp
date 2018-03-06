@@ -71,7 +71,7 @@ bool L3G4200D::init(double xoffset, double yoffset, double zoffset)
   writeTo(L3G4200D_CTRL_REG1, 0x0F);
   writeTo(L3G4200D_CTRL_REG4, 0x80); //Dont override values
   writeTo(L3G4200D_CTRL_REG5, 0x80); 
-  float last_recorded_time = micros()/1000000;
+  last_recorded_time = micros()/1000000;
   return true;
 }
 

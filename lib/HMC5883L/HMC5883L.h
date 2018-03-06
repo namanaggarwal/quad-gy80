@@ -77,6 +77,7 @@ class HMC5883L
   void Update();
 
   float getHeading();
+  float getYaw();
   Matrix getMag();
 
   void calibrate();
@@ -92,8 +93,7 @@ class HMC5883L
   hmc5883l_dataRate_t getDataRate();
   hmc5883l_samples_t getSamples();
 
-  void setOffset(int xoffset, int yoffset);
-  
+  void setOffset(int xoffset, int yoffset); 
   
   
   void printAllRegister();
@@ -108,6 +108,8 @@ class HMC5883L
   double x_offset, y_offset;
   Matrix data_mag = Matrix(3,1);
   float heading = 0;
+  float delta_heading = 0;
+  float prev_heading = 0;
   
 };
 

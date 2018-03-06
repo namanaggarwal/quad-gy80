@@ -64,7 +64,20 @@ void HMC5883L::Update() {
     heading -= 2 * PI;
   }
 
+  delta_heading = prev_heading - heading;
+  prev_heading = heading;
+
+  if (delta_heading < 0) {
+    delta_heading += 2 * PI;
+  }
+  if (delta_heading > 2 * PI) {
+    delta_heading -= 2 * PI;
+  }
+  delta_heading = heading/180*PI;
   heading = heading*180/PI;
+  
+
+
 }
 
 Matrix HMC5883L::getMag() {
@@ -73,6 +86,10 @@ Matrix HMC5883L::getMag() {
 
 float HMC5883L::getHeading() {
   return heading;
+}
+
+float HMC5883L::getYaw() {
+  return delta_heading;
 }
 
 //still in dev

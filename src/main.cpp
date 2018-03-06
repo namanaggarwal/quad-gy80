@@ -48,6 +48,7 @@ void setup() {
     Wire.begin();
     accel.init(0,0,0);
     gyro.init(0,0,0);
+    compass.init();
     
     double H_arr[36] = {1, 0, 0, 0, 0, 0,
                        0, 1, 0, 0, 0, 0,
@@ -128,7 +129,9 @@ void loop() {
 
     // // // Step 4. Update the Observed State
     accel.Update();
+    accel.getAngularPosition()(2) = compass.getYaw();
     gyro.Update();
+    compass.Update();
     // Matrix observed = Matrix(6,1);
     // observed(0) = gyro.getAngularVelocity()(0);
     // observed(1) = gyro.getAngularVelocity()(1);
@@ -162,7 +165,8 @@ void loop() {
 
     // Matrix gps_angles = CFA.multiply(comp_angles.add(dps));//.add(CFB.multiply(accel.getAngularPosition()));
     // comp_angles = gps_angles.add(CFB.multiply(accel.getAngularPosition()));
-
+    Matrix ACYaw = accel.getAngularPosition();
+    ACYaw(2) = compass.getYaw();
     comp_angles = CFA.multiply(comp_angles.add(comp_dt.multiply(gyro.getAngularVelocity()))).add(CFB.multiply(accel.getAngularPosition()));
 
 
@@ -193,7 +197,12 @@ void loop() {
     Serial.print("\tRoll: ");
     Serial.print(accel.getAngularPosition()(1)); 
     Serial.print("\tYaw: ");
-    Serial.println(accel.getAngularPosition()(2));
+    Serial.print(accel.getAngularPosition()(2));
+
+    Serial.print("\tCmpss:\tHdng: ");
+    Serial.print(compass.getHeading());
+    Serial.print("\tYaw: ");
+    Serial.println(compass.getYaw());
     delay(200);
 
 
