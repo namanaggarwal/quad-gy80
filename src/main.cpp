@@ -98,7 +98,6 @@ void loop() {
 
     double B_arr[8] = {dt, 0,
                         0, dt,
-                        0, 0, dt,
                         .5*dt*dt, 0,
                         0, .5*dt*dt};
     Matrix B = Matrix(4, 2, B_arr);
