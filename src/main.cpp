@@ -148,6 +148,7 @@ void loop() {
     // Complimentary Filter Comparison:
     double comp_dt_arr[4] = {dt, 0.0f,
                             0.0f, dt};
+                            
     Matrix comp_dt = Matrix(2,2, comp_dt_arr);
     //Serial.print("Calculating Comp Filter");
     //gyro.getAngularVelocity().printMatrix();
@@ -190,7 +191,7 @@ void loop() {
 
 
 
-
+    // // Testing
     // if(iter == 5){
     //     while(1){}
     // }
