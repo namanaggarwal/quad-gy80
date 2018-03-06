@@ -50,7 +50,6 @@ void HMC5883L::Update() {
   // Set declination angle on your location and fix heading
   // You can find your declination on: http://magnetic-declination.com/
   // (+) Positive or (-) for negative
-  // For Bytom / Poland declination angle is 4'26E (positive)
   // Formula: (deg + (min / 60.0)) / (180 / M_PI);
 
   float declination = ((65 + (56/60))/(180/PI));

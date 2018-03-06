@@ -47,8 +47,22 @@ Matrix L3G4200D::getAngularVelocity() {
   return data_ang_velocity;
 }
 
+Matrix L3G4200D::getAngularVelocity2x1() {
+  Matrix r = Matrix(2,1);
+  r(0) = data_ang_velocity(0);
+  r(1) = data_ang_velocity(1);
+  return r;
+}
+
 Matrix L3G4200D::getAngularPosition() {
   return data_ang_position;
+}
+
+Matrix L3G4200D::getAngularPosition2x1() {
+  Matrix r = Matrix(2,1);
+  r(0) = data_ang_position(0);
+  r(1) = data_ang_position(1);
+  return r;
 }
 
 Matrix L3G4200D::getKalmanInput() {
@@ -59,6 +73,16 @@ Matrix L3G4200D::getKalmanInput() {
   r(3) = data_ang_position(0);
   r(4) = data_ang_position(1);
   r(5) = data_ang_position(2);
+  return r;
+}
+
+Matrix L3G4200D::getKalmanInput4x1() {
+  Matrix r = Matrix(4,1);
+  r(0) = data_ang_velocity(0);
+  r(1) = data_ang_velocity(1);
+  r(2) = data_ang_position(0);
+  r(3) = data_ang_position(1);
+
   return r;
 }
 

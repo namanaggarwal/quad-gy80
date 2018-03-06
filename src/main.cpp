@@ -27,15 +27,16 @@ Matrix Q = Matrix(6,6);   // Covariance of process noise
 Matrix R = Matrix (6,6);   // Covariance of the observation noise
 
 // Matrices for complimentary filter
-Matrix comp_angles = Matrix(3,1);
-double CFA_arr[9] = {.98f, 0, 0,
-                    0, .98f, 0,
-                    0, 0, .98f};
-Matrix CFA = Matrix(3,3, CFA_arr);
-double CFB_arr[9] = {.02f, 0, 0,
-                    0, .02f, 0,
-                    0, 0, .02f};
-Matrix CFB = Matrix(3,3, CFB_arr);
+Matrix comp_angles = Matrix(2,1);
+double CFA_arr[4] = {.98f, 0,
+                    0, .98f,};
+
+Matrix CFA = Matrix(2,2, CFA_arr);
+
+double CFB_arr[4] = {.02f, 0,
+                    0, .02f};
+
+Matrix CFB = Matrix(2,2, CFB_arr);
 
 
 unsigned long pt = 0;
@@ -155,19 +156,16 @@ void loop() {
     // //Pk.printMatrix();
 
     // Complimentary Filter Comparison:
-    double comp_dt_arr[9] = {dt, 0.0f, 0.0f,
-                            0.0f, dt, 0.0f,
-                            0.0f, 0.0f, dt};
-    Matrix comp_dt = Matrix(3,3, comp_dt_arr);
+    double comp_dt_arr[4] = {dt, 0.0f,
+                            0.0f, dt};
+    Matrix comp_dt = Matrix(2,2, comp_dt_arr);
     //Serial.print("Calculating Comp Filter");
     //gyro.getAngularVelocity().printMatrix();
     // Matrix dps = comp_dt.multiply(gyro.getAngularVelocity());
 
     // Matrix gps_angles = CFA.multiply(comp_angles.add(dps));//.add(CFB.multiply(accel.getAngularPosition()));
     // comp_angles = gps_angles.add(CFB.multiply(accel.getAngularPosition()));
-    Matrix ACYaw = accel.getAngularPosition();
-    ACYaw(2) = compass.getYaw();
-    comp_angles = CFA.multiply(comp_angles.add(comp_dt.multiply(gyro.getAngularVelocity()))).add(CFB.multiply(accel.getAngularPosition()));
+    comp_angles = CFA.multiply(comp_angles.add(comp_dt.multiply(gyro.getAngularVelocity2x1()))).add(CFB.multiply(accel.getAngularPosition2x1()));
 
 
 
@@ -175,34 +173,28 @@ void loop() {
     Serial.print(Xk(0));
     Serial.print("\tRoll: ");
     Serial.print(Xk(1));
-    Serial.print("\tYaw: ");
-    Serial.print(Xk(2));
+
 
     Serial.print("\tCompli:\tPitch: ");
     Serial.print(comp_angles(0));
     Serial.print("\tRoll: ");
     Serial.print(comp_angles(1));
-    Serial.print("\tYaw: ");
-    Serial.print(comp_angles(2));
+
 
     Serial.print("\tGyro:\tPitch: ");
     Serial.print(gyro.getAngularPosition()(0));
     Serial.print("\tRoll: ");
     Serial.print(gyro.getAngularPosition()(1));
-    Serial.print("\tYaw: ");
-    Serial.print(gyro.getAngularPosition()(2));
+
 
     Serial.print("\tAccel:\tPitch: ");
     Serial.print(accel.getAngularPosition()(0));   
     Serial.print("\tRoll: ");
     Serial.print(accel.getAngularPosition()(1)); 
-    Serial.print("\tYaw: ");
-    Serial.print(accel.getAngularPosition()(2));
+
 
     Serial.print("\tCmpss:\tHdng: ");
     Serial.print(compass.getHeading());
-    Serial.print("\tYaw: ");
-    Serial.println(compass.getYaw());
     delay(200);
 
 

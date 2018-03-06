@@ -35,6 +35,14 @@ Matrix ADXL345::getLinearAcceleration()
   return data_lin_acceleration;
 }
 
+Matrix ADXL345::getAngularPosition2x1()
+{
+  Matrix r = Matrix(2,1);
+  r(0) = data_ang_position(0);
+  r(1) = data_ang_position(1);
+  return r;
+}
+
 bool ADXL345::init(char x_offset, char y_offset, char z_offset)
 {
   Wire.begin();
