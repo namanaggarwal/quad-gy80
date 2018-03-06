@@ -16,10 +16,8 @@ Matrix Pk = Matrix(4,4);  // Process Covariance Matrix
 Matrix K = Matrix(4,4);   // Kalman Gain
 Matrix Yk = Matrix(4,1);  // Observed State
 
-// User provided
+
 Matrix A = Matrix(4, 4);  // State Transition Model
-//Matrix B = Matrix(3,6);   // Control-Input Model
-//Matrix C = Matrix(6,6);   // duplicate of H
 Matrix H = Matrix(4,4);
 
 // Noise covariance Matrices - User Tuned
@@ -39,7 +37,10 @@ double CFB_arr[4] = {.02f, 0,
 Matrix CFB = Matrix(2,2, CFB_arr);
 
 
+// Timer
 unsigned long pt = 0;
+
+// Testing
 int iter = 0;
 
 
@@ -84,12 +85,9 @@ void setup() {
 }
 
 void loop() {
-    //Serial.println("---------------------------------------");
-    
     unsigned long ct = micros();
     float dt = (ct - pt);
     dt = dt/1000000;
-    //Serial.println(dt,4);
     pt = ct;
 
     double A_arr[16] = {1, 0, 0, 0,
@@ -113,13 +111,11 @@ void loop() {
     Pk = A.multiply(Pk).multiply(A.transpose()).add(Q);
     //Pk.printMatrix();
 
-    // // Step 3. Calculate the Kalman Gain
+    // Step 3. Calculate the Kalman Gain
     K = Pk.multiply(H.transpose()).divide(
         H.multiply(Pk).multiply(H.transpose()).add(R));
     
-    //K.printMatrix();
-
-    // // // Step 4. Update the Observed State
+    // Step 4. Update the Observed State
     accel.Update();
     gyro.Update();
     compass.Update();
@@ -130,32 +126,19 @@ void loop() {
     observed(2) = accel.getAngularPosition()(0);
     observed(3) = accel.getAngularPosition()(1);
   
-
-    // H.printMatrix();
-    // observed.printMatrix();
     Yk = H.multiply(observed);
 
-    //Yk.printMatrix();
-    // // Step 5. Calculate the Current State:
+    // Step 5. Calculate the Current State:
     Xk = Xk.add(K.multiply(Yk.subtract(H.multiply(Xk))));
-    //Xk.printMatrix();
 
     // Step 6. Calculate the new Process Control Matrix
     Pk = H.subtract(K.multiply(H)).multiply(Pk);
-    //Pk = Pk.subtract(K.multiply)
-    //Pk.printMatrix();
 
     // Complimentary Filter Comparison:
     double comp_dt_arr[4] = {dt, 0.0f,
                             0.0f, dt};
                             
     Matrix comp_dt = Matrix(2,2, comp_dt_arr);
-    //Serial.print("Calculating Comp Filter");
-    //gyro.getAngularVelocity().printMatrix();
-    // Matrix dps = comp_dt.multiply(gyro.getAngularVelocity());
-
-    // Matrix gps_angles = CFA.multiply(comp_angles.add(dps));//.add(CFB.multiply(accel.getAngularPosition()));
-    // comp_angles = gps_angles.add(CFB.multiply(accel.getAngularPosition()));
     comp_angles = CFA.multiply(comp_angles.add(comp_dt.multiply(gyro.getAngularVelocity2x1()))).add(CFB.multiply(accel.getAngularPosition2x1()));
 
 
@@ -187,8 +170,6 @@ void loop() {
     Serial.print("\tCmpss:\tHdng: ");
     Serial.print(compass.getHeading());
     delay(200);
-
-
 
 
     // // Testing
