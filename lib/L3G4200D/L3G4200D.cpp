@@ -43,6 +43,13 @@ Matrix L3G4200D::getAngularAcceleration() {
   return data_ang_acceleration;
 }
 
+Matrix L3G4200D::getAngularAcceleration2x1() {
+  Matrix r = Matrix(2,1);
+  r(0) = data_ang_acceleration(0);
+  r(1) = data_ang_acceleration(1);
+  return r;
+}
+
 Matrix L3G4200D::getAngularVelocity() {
   return data_ang_velocity;
 }
