@@ -31,15 +31,9 @@ class L3G4200D : public Sensor
   
   void Update();
   Matrix getAngularVelocity();
-  Matrix getAngularVelocity2x1();
   Matrix getAngularAcceleration();
-  Matrix getAngularAcceleration2x1();
   Matrix getAngularPosition();
-  Matrix getAngularPosition2x1();
-  Matrix getKalmanInput();
-  Matrix getKalmanInput4x1();
-  
-  
+ 
   
   bool init(double xoffset=0, double yoffset=0, double zoffset=0);
   
@@ -67,9 +61,9 @@ class L3G4200D : public Sensor
   double _yoffset;
   double _zoffset;
   
-  Matrix data_ang_position = Matrix(3,1);
-  Matrix data_ang_velocity = Matrix(3,1);
-  Matrix data_ang_acceleration = Matrix(3,1);
+  Matrix data_ang_position = Matrix(2,1);
+  Matrix data_ang_velocity = Matrix(2,1);
+  Matrix data_ang_acceleration = Matrix(2,1);
 
 };
 

@@ -3,7 +3,6 @@
 #include "L3G4200D.h"
 #include "ADXL345.h"
 #include "HMC5883L.h"
-#include "Kalman.h"
 #include "matrix.h"
 
 
@@ -17,7 +16,7 @@ Matrix K = Matrix(4,4);   // Kalman Gain
 Matrix Yk = Matrix(4,1);  // Observed State
 
 
-Matrix A = Matrix(4, 4);  // State Transition Model
+Matrix A = Matrix(4,4);  // State Transition Model
 Matrix H = Matrix(4,4);
 
 // Noise covariance Matrices - User Tuned
@@ -58,6 +57,7 @@ void setup() {
                         0, 0, 0, 1};
     H = Matrix(4, 4, H_arr);    
 
+    // theory: 1st/2nd rows are gyro bias, 3rd/4th are accel noise variance
     double Q_arr[16] = {.05f, 0, 0, 0,
                         0, .05f, 0, 0,
                         0, 0, .05f, 0,
@@ -70,21 +70,15 @@ void setup() {
                         0, 0, 0, .03f};
     R = Matrix(4, 4, R_arr);
 
-    gyro.Update();
-    gyro.Update();
-    gyro.Update();
-    gyro.Update();
-
     accel.Update();
-    accel.Update(); 
+    gyro.Update();
     accel.Update();
-    accel.Update();
-
-
-    Xk = gyro.getKalmanInput4x1();    
+    gyro.Update();
 }
 
 void loop() {
+    Serial.print("Iteration ");
+    Serial.println(iter);
     unsigned long ct = micros();
     float dt = (ct - pt);
     dt = dt/1000000;
@@ -96,85 +90,91 @@ void loop() {
                         0, dt, 0, 1};
     A = Matrix(4, 4, A_arr);
 
-    double B_arr[8] = {dt, 0,
-                        0, dt,
-                        .5*dt*dt, 0,
-                        0, .5*dt*dt};
-    Matrix B = Matrix(4, 2, B_arr);
+    // double B_arr[8] = {dt, 0,
+    //                     0, dt,
+    //                     .5*dt*dt, 0,
+    //                     0, .5*dt*dt};
+    // Matrix B = Matrix(4, 2, B_arr);
     // Step 1. Calculate the Predicted State Matrix 
-    Xk = A.multiply(Xk).add(B.multiply(gyro.getAngularAcceleration2x1())); 
-    //Xk.printMatrix();
+    // 4x1 = (4x4 * 4x1)
+    Serial.println("State Transition Matrix:");
+    Xk = A.multiply(Xk); //.add(B.multiply(gyro.getAngularAcceleration())); 
+    A.printMatrix();
 
-
+    Serial.println("Current State:");
+    Xk.printMatrix();
     // Step 2. Calculate the Predicted Process Control Matrix
+    // 4x4 = (4x4 * 4x4) *(4x4 + 4x4)
+    Serial.println("Process Covariance Matrix:");
     Pk = A.multiply(Pk).multiply(A.transpose()).add(Q);
-    //Pk.printMatrix();
+    Pk.printMatrix();
 
     // Step 3. Calculate the Kalman Gain
+    // 4x4 = (4x4*4x4)/((4x4 * 4x4) + 4x4)
     K = Pk.multiply(H.transpose()).divide(
-        H.multiply(Pk).multiply(H.transpose()).add(R));
+         H.multiply(Pk).multiply(H.transpose()).add(R));
+    Serial.println("Kalman Gain:");
+    K.printMatrix();
+    
     
     // Step 4. Update the Observed State
+    
     accel.Update();
     gyro.Update();
-    compass.Update();
+    // compass.Update();
+
+    
 
     Matrix observed = Matrix(4,1);
     observed(0) = gyro.getAngularVelocity()(0);
     observed(1) = gyro.getAngularVelocity()(1);
     observed(2) = accel.getAngularPosition()(0);
     observed(3) = accel.getAngularPosition()(1);
-  
     Yk = H.multiply(observed);
-
+    Serial.println("Observed State");
+    Yk.printMatrix();
+    Serial.println("Comparison:");
+    // gyro.getAngularVelocity().printMatrix();
+    // accel.getAngularPosition().printMatrix();
+    // 4x1  = 4x4 * 4x1
+    
+    // try refactoring sensors
     // Step 5. Calculate the Current State:
+    //4x1 = 4x1 + (4x4 * 4x1 - (4x4 * 4x1))
     Xk = Xk.add(K.multiply(Yk.subtract(H.multiply(Xk))));
+    Serial.println("Updated State:");
+    Xk.printMatrix();
 
     // Step 6. Calculate the new Process Control Matrix
+    // 4x4 = 4x4 - (4x4*4x4*4x4)
     Pk = H.subtract(K.multiply(H)).multiply(Pk);
-
-    // Complimentary Filter Comparison:
-    double comp_dt_arr[4] = {dt, 0.0f,
-                            0.0f, dt};
-                            
-    Matrix comp_dt = Matrix(2,2, comp_dt_arr);
-    comp_angles = CFA.multiply(comp_angles.add(comp_dt.multiply(gyro.getAngularVelocity2x1()))).add(CFB.multiply(accel.getAngularPosition2x1()));
-
+    Serial.println("Updated Process Covariance Matrix:");
+    Pk.printMatrix();
 
 
     Serial.print("Kalman:\tPitch: ");
-    Serial.print(Xk(0));
+    Serial.print(Xk(2));
     Serial.print("\tRoll: ");
-    Serial.print(Xk(1));
+    Serial.println(Xk(3));
 
+    // Serial.print("\tGyro:\tPitch: ");
+    // Serial.print(gyro.getAngularPosition()(0));
+    // Serial.print("\tRoll: ");
+    // Serial.print(gyro.getAngularPosition()(1));
 
-    Serial.print("\tCompli:\tPitch: ");
-    Serial.print(comp_angles(0));
-    Serial.print("\tRoll: ");
-    Serial.print(comp_angles(1));
+    // Serial.print("\tAccel:\tPitch: ");
+    // Serial.print(accel.getAngularPosition()(0));   
+    // Serial.print("\tRoll: ");
+    // Serial.println(accel.getAngularPosition()(1)); 
 
+    // Serial.print("\tCmpss:\tHdng: ");
+    // Serial.println(compass.getHeading());
+    // delay(200);
 
-    Serial.print("\tGyro:\tPitch: ");
-    Serial.print(gyro.getAngularPosition()(0));
-    Serial.print("\tRoll: ");
-    Serial.print(gyro.getAngularPosition()(1));
-
-
-    Serial.print("\tAccel:\tPitch: ");
-    Serial.print(accel.getAngularPosition()(0));   
-    Serial.print("\tRoll: ");
-    Serial.print(accel.getAngularPosition()(1)); 
-
-
-    Serial.print("\tCmpss:\tHdng: ");
-    Serial.print(compass.getHeading());
-    delay(200);
-
-
-    // // Testing
-    // if(iter == 5){
-    //     while(1){}
-    // }
-    // iter++;
+    // Testing
+    if(iter == 1){
+        while(1){}
+    }
+    iter++;
     
 }

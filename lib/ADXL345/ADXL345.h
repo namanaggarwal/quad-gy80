@@ -29,8 +29,6 @@ class ADXL345 : public Sensor
     void Update();
     Matrix getAngularPosition();
     Matrix getLinearAcceleration();
-    Matrix getAngularPosition2x1();
-    
     
     bool init(char x_offset, char y_offset, char z_offset);
     
@@ -50,8 +48,8 @@ class ADXL345 : public Sensor
     byte _buff[6];
     double _xoffset, _yoffset, _zoffset;
     
-    Matrix data_ang_position = Matrix(3,1);
-    Matrix data_lin_acceleration = Matrix(3, 1);
+    Matrix data_ang_position = Matrix(2,1);
+    Matrix data_lin_acceleration = Matrix(2, 1);
   
 
 };

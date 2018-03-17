@@ -37,7 +37,7 @@ Matrix& Matrix::operator=( const Matrix& other ) {
 }
 
 void Matrix::printMatrix() {
-  Serial.print("\n| ");
+  Serial.print("| ");
   double curr_val;
   for(int i = 0; i < (width*height); i++) {
     curr_val = roundf(data[i]*100)/100.0;
@@ -50,7 +50,7 @@ void Matrix::printMatrix() {
 	Serial.print("| ");
       }
       else {
-	Serial.println("\n");
+	Serial.println("");
       }
     }
   }

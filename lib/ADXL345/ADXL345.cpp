@@ -18,11 +18,11 @@ void ADXL345::Update()
   
   data_lin_acceleration(0) = fX;
   data_lin_acceleration(1) = fY;
-  data_lin_acceleration(2) = fZ;
+
   
   data_ang_position(0) = (atan2(fX, sqrt(fY*fY+fZ*fZ))*180) / PI; //pitch
   data_ang_position(1) = (atan2(fY, sqrt(fX*fX+fZ*fZ))*180) / PI; //roll
-  data_ang_position(2) = (atan2(fZ, sqrt(fX*fX+fY*fY))*180) / PI; //yaw
+
 }
 
 Matrix ADXL345::getAngularPosition()
@@ -35,13 +35,6 @@ Matrix ADXL345::getLinearAcceleration()
   return data_lin_acceleration;
 }
 
-Matrix ADXL345::getAngularPosition2x1()
-{
-  Matrix r = Matrix(2,1);
-  r(0) = data_ang_position(0);
-  r(1) = data_ang_position(1);
-  return r;
-}
 
 bool ADXL345::init(char x_offset, char y_offset, char z_offset)
 {
